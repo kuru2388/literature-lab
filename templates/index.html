@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/app.css?v=dropdown-v2" />
+  <link rel="stylesheet" href="/static/app.css?v=verify-note-v1" />
 </head>
 <body>
   <aside class="rail" id="appRail">
@@ -1785,14 +1785,28 @@
         ? `This search used ${list.reduce((sum, s) => sum + (s.kept || 0), 0)} unique papers from ${(meta && meta.window) || `the last ${recentYears} years`}.`
         : `Each line is how many papers that library holds. Searches look at the last ${recentYears} years.`;
       sourcesEl.innerHTML = `
-        <p class="sources-blurb">Literature Lab searches papers in these 4 libraries.</p>
-        <ul class="source-lines">
-          ${list.map((s) => {
-            const title = s.error ? `${s.site} · ${s.error}` : s.site;
-            return `<li class="${s.error ? "down" : ""}" title="${escapeHtml(title)}"><b>${escapeHtml(s.name)}</b> <span>${escapeHtml(sourceCountLabel(s))}</span></li>`;
-          }).join("")}
-        </ul>
-        <p class="sources-note">${escapeHtml(note)}</p>`;
+        <div class="sources-layout">
+          <div class="sources-col-left">
+            <p class="sources-blurb">Literature Lab searches papers in these 4 libraries.</p>
+            <ul class="source-lines">
+              ${list.map((s) => {
+                const title = s.error ? `${s.site} · ${s.error}` : s.site;
+                return `<li class="${s.error ? "down" : ""}" title="${escapeHtml(title)}"><b>${escapeHtml(s.name)}</b> <span>${escapeHtml(sourceCountLabel(s))}</span></li>`;
+              }).join("")}
+            </ul>
+            <p class="sources-note">${escapeHtml(note)}</p>
+          </div>
+          <div class="sources-col-right">
+            <div class="ai-verify-callout">
+              <div class="verify-callout-header">
+                <span class="verify-badge">⚠️ AI Verification Note</span>
+              </div>
+              <p class="verify-callout-text">
+                <strong>AI agents can make mistakes.</strong> Always <strong>cross-check critical findings and claims</strong> with other LLMs or evidence discovery tools like <a href="https://consensus.app" target="_blank" rel="noopener noreferrer" class="verify-link"><strong>Consensus.app</strong> &nearr;</a>
+              </p>
+            </div>
+          </div>
+        </div>`;
     }
 
     async function loadSources() {
