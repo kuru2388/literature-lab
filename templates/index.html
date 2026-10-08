@@ -1,0 +1,3235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Literature Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css?v=dropdown-v2" />
+</head>
+<body>
+  <aside class="rail" id="appRail">
+    <div class="rail-header">
+      <div class="rail-brand">Literature <span>Lab</span></div>
+      <button class="rail-close-btn" id="closeRail" type="button" aria-label="Close menu">&times;</button>
+    </div>
+    <button class="new-chat" id="newChat" type="button">+ New research</button>
+    <p class="rail-label">Previous research</p>
+    <div id="chatList" class="chat-list"></div>
+    <a class="rail-settings-btn" href="/read">
+      <span class="notes-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg>
+      </span> Read
+      <b id="readCount">0</b>
+    </a>
+    <button class="rail-settings-btn" id="openNotes" type="button">
+      <span class="notes-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h8M8 10h8M8 14h5"/><path d="M5 4h14v16H5z"/></svg>
+      </span> Notes
+      <b id="notesCount">0</b>
+    </button>
+    <button class="rail-settings-btn" id="openStarred" type="button">
+      <span class="star-icon" aria-hidden="true">&#9733;</span> Starred papers
+      <b id="starCount">0</b>
+    </button>
+    <button class="rail-settings-btn" id="openSettings" type="button" onclick="location.href='/settings'">
+      <span class="gear" aria-hidden="true">&#9881;</span> Settings &amp; limits
+    </button>
+    <div class="rail-spend">
+      <span>This run <b id="runSpend">$0.0000</b></span>
+      <span>Total <b id="totalSpend">$0.0000</b></span>
+    </div>
+  </aside>
+  <div class="rail-backdrop" id="railBackdrop"></div>
+
+  <main class="main" id="thread">
+    <header class="masthead">
+      <div class="masthead-main">
+        <button class="mobile-menu-btn" id="openRail" type="button" aria-label="Open navigation menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <span>History &amp; Saved</span>
+        </button>
+        <div class="mark">Literature <span>Lab</span></div>
+      </div>
+      <p>Searches arXiv, OpenAlex, Semantic Scholar, and PubMed. Keywords are checked, then papers from the last 7 years are ranked to your idea.</p>
+    </header>
+
+    <section class="sources" id="sources" aria-label="Paper sources"></section>
+
+    <p id="banner" class="banner"></p>
+
+    <section class="composer">
+      <label for="idea">Project idea</label>
+      <textarea id="idea" placeholder="One or two sentences. Then fill task, domain, and constraint below."></textarea>
+      <div class="topic-grid">
+        <label>
+          Task
+          <input id="topicTask" type="text" maxlength="160" placeholder="What you detect or predict" autocomplete="off" />
+        </label>
+        <label>
+          Domain
+          <input id="topicDomain" type="text" maxlength="160" placeholder="Who or where" autocomplete="off" />
+        </label>
+        <label>
+          Constraint
+          <input id="topicConstraint" type="text" maxlength="200" placeholder="Data or limit" autocomplete="off" />
+        </label>
+      </div>
+      <p id="topicWarn" class="topic-warn" hidden></p>
+      <div class="composer-options">
+        <label for="paperCount">Top papers to read</label>
+        <select id="paperCount" aria-describedby="paperCountHint">
+          <option value="3">3 papers (fast, lower cost)</option>
+          <option value="5">5 papers</option>
+          <option value="8" selected>8 papers (recommended)</option>
+          <option value="10">10 papers</option>
+          <option value="12">12 papers</option>
+          <option value="15">15 papers</option>
+          <option value="30">30 papers (deepest, higher cost)</option>
+        </select>
+        <p id="paperCountHint" class="hint">Gaps, datasets, citations, and the report are built from these papers only.</p>
+      </div>
+      <label class="mode-toggle-row" id="datasetsOnlyRow" title="Only return papers that introduce, describe, or benchmark a dataset for your task">
+        <input type="checkbox" id="datasetsOnly" />
+        <span class="toggle-switch" aria-hidden="true"></span>
+        <span class="toggle-text">
+          <span class="toggle-label">Dataset papers only</span>
+          <span class="toggle-desc">Search only for papers that introduce, describe, or benchmark a dataset for your task — useful when you need training or evaluation data.</span>
+        </span>
+      </label>
+      <div class="model-select-section" aria-label="Choose AI Research Model">
+        <div class="model-select-header">
+          <span class="model-select-title">AI Research Model</span>
+          <span class="model-select-sub">Choose engine to run paper ranking, extraction & gap analysis</span>
+        </div>
+        <div class="model-cards-grid" role="radiogroup" aria-label="AI Model">
+          <!-- OpenAI Option -->
+          <label class="model-card is-selected" id="cardOpenai" data-provider="openai">
+            <input type="radio" name="aiProvider" value="openai" id="providerRadioOpenai" checked />
+            <div class="model-card-indicator" aria-hidden="true"></div>
+            <div class="model-card-body">
+              <div class="model-card-top">
+                <span class="model-card-name">OpenAI GPT-4o</span>
+                <span class="model-badge badge-rec">Recommended</span>
+              </div>
+              <p class="model-card-desc">Top research quality, deep gap analysis & exact paper synthesis.</p>
+              <div class="model-card-footer">
+                <span class="key-status-pill" id="openaiKeyStatus">
+                  <span class="status-dot dot-warn"></span> Checking key…
+                </span>
+                <a href="/settings#keys" class="add-key-link" id="openaiAddKeyLink">Settings &rarr;</a>
+              </div>
+            </div>
+          </label>
+
+          <!-- Gemini Option -->
+          <label class="model-card" id="cardGemini" data-provider="gemini">
+            <input type="radio" name="aiProvider" value="gemini" id="providerRadioGemini" />
+            <div class="model-card-indicator" aria-hidden="true"></div>
+            <div class="model-card-body">
+              <div class="model-card-top">
+                <span class="model-card-name">Google Gemini Flash</span>
+                <span class="model-badge badge-free">100% Free</span>
+              </div>
+              <p class="model-card-desc">Fast 1M context. 1,500 free daily requests via Google AI Studio.</p>
+              <div class="model-card-footer">
+                <span class="key-status-pill" id="geminiKeyStatus">
+                  <span class="status-dot dot-warn"></span> Checking key…
+                </span>
+                <a href="/settings#keys" class="add-key-link" id="geminiAddKeyLink">Settings &rarr;</a>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <p class="hint">Chats are saved, so a refresh keeps the papers and the report.</p>
+        <button id="run" type="button">Run research</button>
+      </div>
+    </section>
+
+    <div id="userBubble" class="bubble user" hidden>
+      <div class="who">Your idea</div>
+      <p id="userIdea"></p>
+    </div>
+
+    <section class="layout">
+      <aside class="panel">
+        <h2>Agents</h2>
+        <ol id="steps" class="steps"></ol>
+        <div id="retryBar" class="retry-bar" hidden>
+          <p id="retryText">A step stopped. Finished work is kept.</p>
+          <button type="button" class="retry-btn" id="retryRun">Try again</button>
+        </div>
+      </aside>
+      <section class="panel">
+        <h2>Results</h2>
+        <div id="results" class="empty">Pick a saved chat on the left, or describe a new idea above.</div>
+      </section>
+    </section>
+  </main>
+
+  <div id="notesPanel" class="starred-overlay" hidden>
+    <div class="starred-backdrop" id="notesBackdrop"></div>
+    <aside class="starred-drawer notes-drawer" role="dialog" aria-modal="true" aria-labelledby="notesTitle">
+      <div class="starred-head">
+        <div>
+          <h2 id="notesTitle">Notes</h2>
+          <p class="hint">Quotes and notes you marked, grouped by paper. Open a paper to keep editing.</p>
+        </div>
+        <button class="ghost" id="closeNotes" type="button">Close</button>
+      </div>
+      <label class="notes-search-label" for="notesSearch">Search
+        <input id="notesSearch" type="search" placeholder="Paper, year, quote, or your note" autocomplete="off" />
+      </label>
+      <div id="notesList" class="starred-list"></div>
+    </aside>
+  </div>
+
+  <div id="starredPanel" class="starred-overlay" hidden>
+    <div class="starred-backdrop" id="starredBackdrop"></div>
+    <aside class="starred-drawer" role="dialog" aria-modal="true" aria-labelledby="starredTitle">
+      <div class="starred-head">
+        <div>
+          <h2 id="starredTitle">Starred papers</h2>
+          <p class="hint">Click the star on any paper to save it here. Open a card for full details.</p>
+        </div>
+        <button class="ghost" id="closeStarred" type="button">Close</button>
+      </div>
+      <div id="starredList" class="starred-list">      </div>
+    </aside>
+  </div>
+
+  <div id="selectUploadPanel" class="starred-overlay" hidden>
+    <div class="starred-backdrop" id="selectUploadBackdrop"></div>
+    <aside class="starred-drawer" role="dialog" aria-modal="true" aria-labelledby="selectUploadTitle">
+      <div class="starred-head">
+        <div>
+          <h2 id="selectUploadTitle">Your papers</h2>
+          <p class="hint">Pick an uploaded research paper to add to this chat thread with a <strong>You</strong> tag.</p>
+        </div>
+        <button class="ghost" id="closeSelectUpload" type="button">Close</button>
+      </div>
+      <div id="selectUploadList" class="starred-list"></div>
+    </aside>
+  </div>
+
+
+  <div id="readerPanel" class="reader-overlay" hidden>
+    <div class="reader-backdrop" id="readerBackdrop"></div>
+    <div class="reader-shell" role="dialog" aria-modal="true" aria-labelledby="readerTitle">
+      <div class="reader-head">
+        <div>
+          <h2 id="readerTitle">Read paper</h2>
+          <p class="hint" id="readerHint">Extract on the left. PDF on the right. Jump to a section, then check it in the paper.</p>
+        </div>
+        <button class="ghost" id="closeReader" type="button">Close</button>
+      </div>
+      <div class="reader-jumps" id="readerJumps"></div>
+      <div class="reader-split">
+        <aside class="reader-notes">
+          <div id="readerMeta" class="reader-meta"></div>
+          <div class="reader-tabs" role="tablist">
+            <button type="button" class="reader-tab on" id="tabGuide" data-reader-tab="guide">Guide</button>
+            <button type="button" class="reader-tab" id="tabMarks" data-reader-tab="marks">Marks <b id="readerMarkCount">0</b></button>
+            <button type="button" class="reader-tab" id="tabExtract" data-reader-tab="extract">Extract</button>
+          </div>
+          <section class="guide-panel" id="guidePanel">
+            <div id="readFlow" class="read-flow"></div>
+            <div class="tutor">
+              <div id="tutorLog" class="tutor-log"></div>
+              <div class="tutor-compose">
+                <label class="tutor-provider-label">Model
+                  <select id="tutorProvider">
+                    <option value="">Use saved default</option>
+                    <option value="openai">OpenAI gpt-4o</option>
+                    <option value="gemini">Gemini Flash (free)</option>
+                  </select>
+                </label>
+                <textarea id="tutorInput" rows="3" maxlength="4000" placeholder="Ask how to find the gap, the method, or how to do Pass 1. The tutor teaches the technique, then points to this paper."></textarea>
+                <button type="button" class="btn-save btn-save--primary" id="tutorSend">Ask tutor</button>
+              </div>
+            </div>
+          </section>
+          <div id="readerExtract" hidden></div>
+          <section class="marks-panel" id="marksPanel" hidden>
+            <div class="marks-toolbar">
+              <p class="hint" id="marksHint">Select text in the PDF, then click Mark.</p>
+              <button type="button" class="btn-save btn-save--primary" id="markBtn">Mark</button>
+              <button type="button" class="ghost" id="saveMarks">Save</button>
+            </div>
+            <div id="marksList"></div>
+          </section>
+        </aside>
+        <div class="reader-pdf-wrap">
+          <div class="pdf-bar" id="pdfBar" hidden>
+            <button type="button" class="ghost" id="pdfPrev">Prev</button>
+            <label class="pdf-page-label">Page
+              <input id="pdfPageInput" type="number" min="1" value="1" />
+              <span id="pdfPageCount">/ 1</span>
+            </label>
+            <button type="button" class="ghost" id="pdfNext">Next</button>
+            <button type="button" class="btn-save btn-save--primary" id="markBtnPdf">Mark</button>
+          </div>
+          <div id="readerPdf" class="reader-pdf"></div>
+          <p id="readerMissing" class="reader-missing" hidden></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="modal" hidden aria-hidden="true">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+      <div class="modal-icon" aria-hidden="true">&#128465;</div>
+      <h3 id="deleteModalTitle">Delete this research?</h3>
+      <p class="modal-name" id="deleteModalName"></p>
+      <p class="modal-note">This removes the whole research, not only the chat name. It cannot be undone.</p>
+      <ul class="modal-wipe">
+        <li>This chat, the report, gaps, and datasets</li>
+        <li>Papers the agent gathered, including saved PDFs</li>
+        <li>Your marks, notes, tutor chats, and reading progress</li>
+        <li>Starred papers saved from this research</li>
+      </ul>
+      <p class="modal-keep">PDFs you uploaded yourself on the You tab are kept.</p>
+      <div class="modal-actions">
+        <button class="ghost" id="deleteCancel" type="button">Keep it</button>
+        <button class="danger-btn" id="deleteConfirm" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="providerModal" class="modal" hidden aria-hidden="true">
+    <div class="modal-backdrop" data-close-provider="1"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="providerModalTitle">
+      <h3 id="providerModalTitle">Which model for this run?</h3>
+      <p class="modal-note">Both keys are saved. OpenAI gpt-4o is recommended for quality. Gemini Flash uses your free daily quota (Pro is not free on new keys).</p>
+      <div class="provider-actions">
+        <button class="btn-save btn-save--primary" id="pickOpenai" type="button">OpenAI gpt-4o <span class="rec-tag">recommended</span></button>
+        <button class="btn-save" id="pickGemini" type="button">Gemini Flash (free)</button>
+        <button class="ghost" id="providerCancel" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/vendor/marked.min.js"></script>
+  <script src="/static/vendor/pdf.min.js"></script>
+  <script src="/static/nav.js"></script>
+  <script>
+    const ideaEl = document.getElementById("idea");
+    const topicTaskEl = document.getElementById("topicTask");
+    const topicDomainEl = document.getElementById("topicDomain");
+    const topicConstraintEl = document.getElementById("topicConstraint");
+    const topicWarnEl = document.getElementById("topicWarn");
+    const paperCountEl = document.getElementById("paperCount");
+    const runEl = document.getElementById("run");
+    const stepsEl = document.getElementById("steps");
+    const resultsEl = document.getElementById("results");
+    const bannerEl = document.getElementById("banner");
+    const runSpendEl = document.getElementById("runSpend");
+    const totalSpendEl = document.getElementById("totalSpend");
+    const chatListEl = document.getElementById("chatList");
+    const newChatEl = document.getElementById("newChat");
+    const userBubbleEl = document.getElementById("userBubble");
+    const userIdeaEl = document.getElementById("userIdea");
+    const sourcesEl = document.getElementById("sources");
+    const datasetsOnlyEl = document.getElementById("datasetsOnly");
+    const datasetsOnlyRow = document.getElementById("datasetsOnlyRow");
+    const cardOpenai = document.getElementById("cardOpenai");
+    const cardGemini = document.getElementById("cardGemini");
+    const radioOpenai = document.getElementById("providerRadioOpenai");
+    const radioGemini = document.getElementById("providerRadioGemini");
+    const openaiKeyStatus = document.getElementById("openaiKeyStatus");
+    const geminiKeyStatus = document.getElementById("geminiKeyStatus");
+    let pollTimer = null;
+    let keyConfigured = false;
+    let openaiConfigured = false;
+    let geminiConfigured = false;
+    let preferredProvider = "openai";
+    let activeId = null;
+    let lastPapers = [];
+    let lastTaskMeta = { id: "", title: "" };
+    let starredKeys = new Set();
+    let lastNotes = [];
+    let sourceCatalog = [];
+    let recentYears = 7;
+
+    function composeTopic() {
+      const idea = ideaEl.value.trim();
+      const task = topicTaskEl.value.trim();
+      const domain = topicDomainEl.value.trim();
+      const constraint = topicConstraintEl.value.trim();
+      const lines = [];
+      if (task) lines.push(`Task: ${task}`);
+      if (domain) lines.push(`Domain: ${domain}`);
+      if (constraint) lines.push(`Constraint: ${constraint}`);
+      const prompt = [idea, lines.join("\n")].filter(Boolean).join("\n\n");
+      return { idea, task, domain, constraint, prompt };
+    }
+
+    function topicWarning(topic) {
+      const started = Boolean(topic.idea || topic.task || topic.domain || topic.constraint);
+      if (!started) return "";
+      const missing = [];
+      if (!topic.task) missing.push("task");
+      if (!topic.domain) missing.push("domain");
+      if (!topic.constraint) missing.push("constraint");
+      const blob = `${topic.idea} ${topic.task} ${topic.domain} ${topic.constraint}`.toLowerCase();
+      const words = blob.match(/[a-z0-9]+/g) || [];
+      const compact = (topic.idea || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+      const broad = /^(ai|artificial intelligence|machine learning|ml|deep learning|nlp|data science)?\s*(for|in|and)?\s*(healthcare|health|education|finance|agriculture|security|business|medicine|medical)?$/.test(compact);
+      if (missing.length === 3 && (words.length < 10 || broad)) {
+        return "This looks too broad. Add a task (what you detect or predict), a domain (who or where), and a constraint (data or limit).";
+      }
+      if (missing.length) {
+        return `A precise topic needs ${missing.join(", ")}. You can still run; papers may be mixed.`;
+      }
+      return "";
+    }
+
+    function updateTopicWarn() {
+      const note = topicWarning(composeTopic());
+      topicWarnEl.hidden = !note;
+      topicWarnEl.textContent = note;
+    }
+
+    [ideaEl, topicTaskEl, topicDomainEl, topicConstraintEl].forEach((el) => {
+      el.addEventListener("input", updateTopicWarn);
+    });
+
+    if (datasetsOnlyEl && datasetsOnlyRow) {
+      datasetsOnlyEl.addEventListener("change", () => {
+        datasetsOnlyRow.classList.toggle("is-active", datasetsOnlyEl.checked);
+      });
+    }
+
+    function updateModelCardsUI(selected) {
+      if (radioOpenai && radioGemini) {
+        radioOpenai.checked = (selected === "openai");
+        radioGemini.checked = (selected === "gemini");
+      }
+      cardOpenai?.classList.toggle("is-selected", selected === "openai");
+      cardGemini?.classList.toggle("is-selected", selected === "gemini");
+    }
+
+    [radioOpenai, radioGemini].forEach((radio) => {
+      radio?.addEventListener("change", () => {
+        const val = document.querySelector('input[name="aiProvider"]:checked')?.value || "openai";
+        updateModelCardsUI(val);
+        preferredProvider = val;
+        fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ preferred_provider: val }),
+        }).catch(() => {});
+      });
+    });
+
+    document.querySelectorAll(".add-key-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    });
+
+    const DATA_ICONS = {
+      text: "Aa",
+      images: "▣",
+      audio: "♪",
+      video: "▶",
+      tabular: "▦",
+      graph: "◈",
+      multimodal: "✦",
+      benchmark: "★",
+    };
+
+    const DEFAULT_STEPS = [
+      { id: "plan", label: "Prepare search tags" },
+      { id: "verify_tags", label: "Verify keywords" },
+      { id: "search", label: "Search research papers" },
+      { id: "rank_abstracts", label: "Rank abstracts" },
+      { id: "download", label: "Download PDFs" },
+      { id: "extract", label: "Extract findings" },
+      { id: "gaps", label: "Find research gaps" },
+      { id: "rank_final", label: "Rank best papers" },
+      { id: "verify_papers", label: "Verify fit to your idea" },
+      { id: "datasets", label: "Collect datasets" },
+      { id: "report", label: "Write report" },
+    ];
+
+    function errorMessage(err) {
+      if (!err) return "Request failed";
+      if (typeof err.detail === "string") return err.detail;
+      if (Array.isArray(err.detail)) {
+        return err.detail.map((item) => {
+          const where = Array.isArray(item.loc) ? item.loc.filter((p) => p !== "body").join(".") : "";
+          return where ? `${where}: ${item.msg}` : (item.msg || "Invalid request");
+        }).join("; ");
+      }
+      return err.message || "Request failed";
+    }
+
+    function showBanner(text) {
+      bannerEl.textContent = text || "";
+      bannerEl.classList.toggle("show", Boolean(text));
+    }
+
+    function showBannerHtml(html) {
+      bannerEl.innerHTML = html || "";
+      bannerEl.classList.toggle("show", Boolean(html));
+    }
+
+    bannerEl.addEventListener("click", (event) => {
+      const retryBtn = event.target.closest("[data-retry-upload]");
+      if (retryBtn) {
+        event.preventDefault();
+        sendPaperToAgent(retryBtn.dataset.retryUpload, retryBtn);
+      }
+    });
+
+    let deleteResolver = null;
+
+    function askDelete(title) {
+      const modal = document.getElementById("deleteModal");
+      const nameEl = document.getElementById("deleteModalName");
+      const cancelBtn = document.getElementById("deleteCancel");
+      const confirmBtn = document.getElementById("deleteConfirm");
+
+      nameEl.textContent = title || "Untitled research";
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      cancelBtn.focus();
+
+      return new Promise((resolve) => {
+        deleteResolver = resolve;
+      });
+    }
+
+    function closeDelete(confirmed) {
+      const modal = document.getElementById("deleteModal");
+      if (modal.hidden) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      if (deleteResolver) {
+        deleteResolver(confirmed);
+        deleteResolver = null;
+      }
+    }
+
+    document.getElementById("deleteCancel").addEventListener("click", () => closeDelete(false));
+    document.getElementById("deleteConfirm").addEventListener("click", () => closeDelete(true));
+    document.querySelector("#deleteModal .modal-backdrop").addEventListener("click", () => closeDelete(false));
+    document.getElementById("deleteModal").addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeDelete(false);
+    });
+
+    document.getElementById("openNotes").addEventListener("click", openNotesPanel);
+    document.getElementById("closeNotes").addEventListener("click", closeNotesPanel);
+    document.getElementById("notesBackdrop").addEventListener("click", closeNotesPanel);
+    document.getElementById("notesSearch").addEventListener("input", () => renderNotesList(lastNotes));
+    document.getElementById("notesList").addEventListener("click", (event) => {
+      const uploadBtn = event.target.closest("[data-open-upload]");
+      if (uploadBtn) {
+        event.preventDefault();
+        closeNotesPanel();
+        openReader("", "1", { tab: "guide", uploadId: uploadBtn.dataset.openUpload });
+        return;
+      }
+      const readerBtn = event.target.closest("[data-open-reader]");
+      if (!readerBtn) return;
+      event.preventDefault();
+      closeNotesPanel();
+      openReader(readerBtn.dataset.readerTask, readerBtn.dataset.openReader);
+    });
+    document.getElementById("openStarred").addEventListener("click", openStarredPanel);
+    document.getElementById("closeStarred").addEventListener("click", closeStarredPanel);
+    document.getElementById("starredBackdrop").addEventListener("click", closeStarredPanel);
+    document.getElementById("starredList").addEventListener("click", async (event) => {
+      const unstar = event.target.closest("[data-unstar-key]");
+      if (unstar) {
+        event.preventDefault();
+        await toggleStar(unstar.dataset.unstarKey);
+        return;
+      }
+      const chatLink = event.target.closest("[data-open-chat]");
+      if (chatLink) {
+        event.preventDefault();
+        closeStarredPanel();
+        await openChat(chatLink.dataset.openChat);
+        return;
+      }
+      const readerBtn = event.target.closest("[data-open-reader]");
+      if (readerBtn) {
+        event.preventDefault();
+        closeStarredPanel();
+        openReader(readerBtn.dataset.readerTask, readerBtn.dataset.openReader);
+      }
+    });
+    document.getElementById("closeSelectUpload").addEventListener("click", closeSelectUploadPanel);
+    document.getElementById("selectUploadBackdrop").addEventListener("click", closeSelectUploadPanel);
+    document.getElementById("selectUploadList").addEventListener("click", async (event) => {
+      const sendAgentBtn = event.target.closest("[data-send-to-agent]");
+      if (sendAgentBtn) {
+        event.preventDefault();
+        closeSelectUploadPanel();
+        await sendPaperToAgent(sendAgentBtn.dataset.sendToAgent, sendAgentBtn);
+        return;
+      }
+      const btn = event.target.closest("[data-add-upload-to-chat]");
+      if (!btn) return;
+      const uploadId = btn.dataset.addUploadToChat;
+      closeSelectUploadPanel();
+      await attachPaperToChat(uploadId);
+    });
+
+    resultsEl.addEventListener("click", (event) => {
+      const sendAgentBtn = event.target.closest("[data-send-to-agent]");
+      if (sendAgentBtn) {
+        event.preventDefault();
+        sendPaperToAgent(sendAgentBtn.dataset.sendToAgent, sendAgentBtn);
+        return;
+      }
+      const uploadBtn = event.target.closest("[data-open-upload]");
+      if (uploadBtn) {
+        event.preventDefault();
+        openReader("", "1", { tab: "guide", uploadId: uploadBtn.dataset.openUpload });
+        return;
+      }
+      const readerBtn = event.target.closest("[data-open-reader]");
+      if (readerBtn) {
+        event.preventDefault();
+        openReader(activeId || lastTaskMeta.id, readerBtn.dataset.openReader);
+        return;
+      }
+      const selectUploadBtn = event.target.closest("#btnSelectUpload");
+      if (selectUploadBtn) {
+        event.preventDefault();
+        openSelectUploadPanel();
+        return;
+      }
+      const starBtn = event.target.closest(".star-btn[data-star-key]");
+      if (!starBtn) return;
+      event.preventDefault();
+      toggleStar(starBtn.dataset.starKey);
+    });
+
+    resultsEl.addEventListener("change", (event) => {
+      const pdfInput = event.target.closest("#chatPdfInput");
+      if (pdfInput && pdfInput.files && pdfInput.files[0]) {
+        const file = pdfInput.files[0];
+        attachPaperToChat(file);
+        pdfInput.value = "";
+      }
+    });
+    document.getElementById("closeReader").addEventListener("click", closeReader);
+    document.getElementById("readerBackdrop").addEventListener("click", closeReader);
+    document.getElementById("markBtn").addEventListener("click", addCurrentMark);
+    document.getElementById("markBtnPdf").addEventListener("click", addCurrentMark);
+    document.getElementById("saveMarks").addEventListener("click", async () => {
+      try {
+        await persistMarks();
+        renderReaderMeta();
+        renderMarksList();
+      } catch (err) {
+        document.getElementById("marksHint").textContent = err.message || "Could not save.";
+      }
+    });
+    document.getElementById("pdfPrev").addEventListener("click", () => showPdfPage((readerState.page || 1) - 1));
+    document.getElementById("pdfNext").addEventListener("click", () => showPdfPage((readerState.page || 1) + 1));
+    document.getElementById("pdfPageInput").addEventListener("change", (event) => {
+      showPdfPage(event.target.value);
+    });
+    document.querySelector(".reader-notes .reader-tabs").addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-reader-tab]");
+      if (tab) setReaderTab(tab.dataset.readerTab);
+    });
+    document.getElementById("marksList").addEventListener("click", (event) => {
+      const jump = event.target.closest("[data-jump-mark]");
+      if (jump) {
+        showPdfPage(Number(jump.dataset.jumpMark));
+        return;
+      }
+      const remove = event.target.closest("[data-delete-mark]");
+      if (remove) {
+        readerState.marks = (readerState.marks || []).filter((mark) => mark.id !== remove.dataset.deleteMark);
+        renderMarksList();
+        queueSaveMarks();
+        highlightMarksOnPage();
+        return;
+      }
+      const move = event.target.closest("[data-move]");
+      if (!move) return;
+      const card = event.target.closest("[data-mark-id]");
+      if (!card) return;
+      const index = (readerState.marks || []).findIndex((mark) => mark.id === card.dataset.markId);
+      const next = index + Number(move.dataset.move);
+      if (index < 0 || next < 0 || next >= readerState.marks.length) return;
+      const copy = readerState.marks.slice();
+      const [item] = copy.splice(index, 1);
+      copy.splice(next, 0, item);
+      readerState.marks = copy;
+      renderMarksList();
+      queueSaveMarks();
+    });
+    document.getElementById("marksList").addEventListener("input", (event) => {
+      const area = event.target.closest("[data-note-mark]");
+      if (!area) return;
+      const mark = (readerState.marks || []).find((item) => item.id === area.dataset.noteMark);
+      if (!mark) return;
+      mark.note = area.value;
+      queueSaveMarks();
+    });
+    document.getElementById("readerJumps").addEventListener("click", (event) => {
+      const jump = event.target.closest("[data-jump-page]");
+      if (!jump) return;
+      showPdfPage(Number(jump.dataset.jumpPage), jump.dataset.jumpId || "");
+    });
+    document.getElementById("readerExtract").addEventListener("click", (event) => {
+      const field = event.target.closest("[data-jump-page]");
+      if (!field) return;
+      showPdfPage(Number(field.dataset.jumpPage), field.dataset.jumpId || "");
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (!document.getElementById("readerPanel").hidden) {
+        closeReader();
+        return;
+      }
+      if (!document.getElementById("notesPanel").hidden) {
+        closeNotesPanel();
+        return;
+      }
+      if (!document.getElementById("starredPanel").hidden) {
+        closeStarredPanel();
+      }
+    });
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function renderMarkdown(raw) {
+      if (typeof marked !== "undefined" && marked && typeof marked.parse === "function") {
+        try {
+          return marked.parse(raw || "");
+        } catch (e) {
+          console.warn("marked.parse error, using fallback:", e);
+        }
+      }
+      return fallbackMarkdown(raw);
+    }
+
+    function fallbackMarkdown(raw) {
+      const text = String(raw || "");
+      if (!text.trim()) return "";
+      const lines = text.split("\n");
+      let inList = false;
+      let inCode = false;
+      let codeBuffer = [];
+      const out = [];
+
+      for (let line of lines) {
+        if (line.trim().startsWith("```")) {
+          if (inCode) {
+            out.push(`<pre><code>${escapeHtml(codeBuffer.join("\n"))}</code></pre>`);
+            codeBuffer = [];
+            inCode = false;
+          } else {
+            if (inList) { out.push("</ul>"); inList = false; }
+            inCode = true;
+          }
+          continue;
+        }
+        if (inCode) {
+          codeBuffer.push(line);
+          continue;
+        }
+        const trimmed = line.trim();
+        if (!trimmed) {
+          if (inList) { out.push("</ul>"); inList = false; }
+          continue;
+        }
+        if (trimmed.startsWith("### ")) {
+          if (inList) { out.push("</ul>"); inList = false; }
+          out.push(`<h3>${escapeHtml(trimmed.slice(4))}</h3>`);
+        } else if (trimmed.startsWith("## ")) {
+          if (inList) { out.push("</ul>"); inList = false; }
+          out.push(`<h2>${escapeHtml(trimmed.slice(3))}</h2>`);
+        } else if (trimmed.startsWith("# ")) {
+          if (inList) { out.push("</ul>"); inList = false; }
+          out.push(`<h1>${escapeHtml(trimmed.slice(2))}</h1>`);
+        } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+          if (!inList) { out.push("<ul>"); inList = true; }
+          let item = escapeHtml(trimmed.slice(2));
+          item = item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+          item = item.replace(/\*(.+?)\*/g, "<em>$1</em>");
+          item = item.replace(/`(.+?)`/g, "<code>$1</code>");
+          out.push(`<li>${item}</li>`);
+        } else {
+          if (inList) { out.push("</ul>"); inList = false; }
+          let p = escapeHtml(trimmed);
+          p = p.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+          p = p.replace(/\*(.+?)\*/g, "<em>$1</em>");
+          p = p.replace(/`(.+?)`/g, "<code>$1</code>");
+          out.push(`<p>${p}</p>`);
+        }
+      }
+      if (inCode && codeBuffer.length) {
+        out.push(`<pre><code>${escapeHtml(codeBuffer.join("\n"))}</code></pre>`);
+      }
+      if (inList) { out.push("</ul>"); }
+      return out.join("\n");
+    }
+
+    function paperKey(paper) {
+      return String((paper && (paper.url || paper.title)) || "").trim();
+    }
+
+    function updateStarCount(n) {
+      const el = document.getElementById("starCount");
+      if (el) el.textContent = String(n ?? starredKeys.size);
+    }
+
+    function refreshStarButtons() {
+      document.querySelectorAll(".star-btn[data-star-key]").forEach((btn) => {
+        const on = starredKeys.has(btn.dataset.starKey);
+        btn.classList.toggle("on", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.setAttribute("aria-label", on ? "Remove from starred papers" : "Star this paper");
+        btn.title = on ? "Starred — click to remove" : "Star this paper";
+      });
+    }
+
+    async function loadStars() {
+      try {
+        const res = await fetch("/api/stars");
+        if (!res.ok) return;
+        const data = await res.json();
+        starredKeys = new Set((data.papers || []).map((paper) => paper.key || paperKey(paper)));
+        updateStarCount(data.count ?? starredKeys.size);
+        refreshStarButtons();
+        if (!document.getElementById("starredPanel").hidden) {
+          renderStarredList(data.papers || []);
+        }
+      } catch (_err) {
+        /* keep last known stars */
+      }
+    }
+
+    function starField(label, text) {
+      if (!text) return "";
+      const value = Array.isArray(text) ? text.filter(Boolean).join(", ") : String(text);
+      if (!value.trim()) return "";
+      return `<p class="starred-field"><strong>${escapeHtml(label)}.</strong> ${escapeHtml(value)}</p>`;
+    }
+
+    function renderStarredList(papers) {
+      const list = document.getElementById("starredList");
+      if (!papers.length) {
+        list.innerHTML = `<p class="empty">No starred papers yet. After a run, click the star on a paper in Results to save it here.</p>`;
+        return;
+      }
+      list.innerHTML = papers.map((paper) => {
+        const key = paper.key || paperKey(paper);
+        const authors = Array.isArray(paper.authors) ? paper.authors.slice(0, 8).join(", ") : (paper.authors || "");
+        const chatLink = paper.task_id
+          ? `<a class="open-paper" href="#chat/${escapeHtml(paper.task_id)}" data-open-chat="${escapeHtml(paper.task_id)}">Open chat</a>`
+          : "";
+        return `
+          <article class="starred-card">
+            <div class="starred-card-top">
+              <h3>${paper.url
+                ? `<a href="${escapeHtml(paper.url)}" target="_blank" rel="noreferrer">${escapeHtml(paper.title || "Untitled paper")}</a>`
+                : escapeHtml(paper.title || "Untitled paper")}</h3>
+              <button type="button" class="star-btn on" data-unstar-key="${escapeHtml(key)}" aria-label="Remove from starred papers" title="Remove from starred papers">&#9733;</button>
+            </div>
+            <p class="meta">${escapeHtml(authors)}${paper.year ? " · " + escapeHtml(paper.year) : ""}</p>
+            <p class="meta">
+              ${paper.source ? `<span class="src">${escapeHtml(paper.source)}</span>` : ""}
+              ${paper.venue ? escapeHtml(paper.venue) : ""}
+              ${paper.citations != null ? ` · ${escapeHtml(paper.citations)} citations` : ""}
+              ${paper.chat_title ? ` · from ${escapeHtml(paper.chat_title)}` : ""}
+            </p>
+            ${starField("Problem", paper.problem)}
+            ${starField("Method", paper.method)}
+            ${starField("Features", paper.features)}
+            ${starField("Datasets", paper.datasets)}
+            ${starField("Metrics", paper.metrics)}
+            ${starField("Findings", paper.key_findings)}
+            ${starField("Limitations", paper.limitations)}
+            ${starField("Why read", paper.why_read)}
+            ${paper.verdict ? `<p class="verdict">${escapeHtml(paper.verdict)}</p>` : ""}
+            <p class="starred-actions">
+              ${paper.task_id && paper.rank
+                ? `<button type="button" class="open-paper read-in-app" data-reader-task="${escapeHtml(paper.task_id)}" data-open-reader="${escapeHtml(paper.rank)}">Read in app</button>`
+                : ""}
+              ${paper.url ? `<a class="open-paper" href="${escapeHtml(paper.url)}" target="_blank" rel="noreferrer">Open paper</a>` : ""}
+              ${chatLink}
+            </p>
+          </article>`;
+      }).join("");
+    }
+
+    function openStarredPanel() {
+      closeReader();
+      closeNotesPanel();
+      closeReadPanel();
+      document.getElementById("starredPanel").hidden = false;
+      document.body.classList.add("starred-open");
+      loadStars();
+    }
+
+    function updateNotesCount(n) {
+      const el = document.getElementById("notesCount");
+      if (el) el.textContent = String(n ?? lastNotes.reduce((sum, paper) => sum + (paper.mark_count || (paper.marks || []).length), 0));
+    }
+
+    function notesQuery() {
+      return (document.getElementById("notesSearch").value || "").trim().toLowerCase();
+    }
+
+    function paperMatchesQuery(paper, query) {
+      if (!query) return true;
+      const blob = [
+        paper.research_name,
+        paper.title,
+        paper.year,
+        paper.authors,
+        ...(paper.marks || []).map((mark) => `${mark.text || ""} ${mark.note || ""}`),
+      ].join(" ").toLowerCase();
+      return blob.includes(query);
+    }
+
+    function renderNotesList(papers) {
+      const list = document.getElementById("notesList");
+      const query = notesQuery();
+      const rows = (papers || []).filter((paper) => paperMatchesQuery(paper, query));
+      if (!(papers || []).length) {
+        list.innerHTML = `<p class="empty">No notes yet. Open a PDF with Read in app, select a sentence, and click Mark.</p>`;
+        return;
+      }
+      if (!rows.length) {
+        list.innerHTML = `<p class="empty">No notes match that search.</p>`;
+        return;
+      }
+      list.innerHTML = rows.map((paper) => {
+        const year = paper.year ? String(paper.year) : "";
+        const marks = (paper.marks || []).map((mark) => `
+          <li class="note-item">
+            <span class="note-page">p.${escapeHtml(mark.page)}</span>
+            <blockquote>${escapeHtml(mark.text || "")}</blockquote>
+            ${mark.note ? `<p class="note-mine">${escapeHtml(mark.note)}</p>` : `<p class="note-mine muted">No note written yet.</p>`}
+          </li>
+        `).join("");
+        return `
+          <article class="notes-card">
+            <p class="notes-kicker">${escapeHtml(paper.research_name || "Untitled research")}</p>
+            <h3>${escapeHtml(paper.title || "Untitled paper")}</h3>
+            <p class="meta">${year ? escapeHtml(year) : "Year not set"}${paper.authors ? " · " + escapeHtml(paper.authors) : ""} · ${escapeHtml(paper.mark_count || (paper.marks || []).length)} marks</p>
+            <ul class="note-items">${marks}</ul>
+            ${String(paper.task_id || "").startsWith("upload:")
+              ? `<p class="starred-actions"><button type="button" class="open-paper read-in-app" data-open-upload="${escapeHtml(String(paper.task_id).split(":")[1] || "")}">Open paper</button></p>`
+              : paper.task_id && paper.rank
+              ? `<p class="starred-actions"><button type="button" class="open-paper read-in-app" data-reader-task="${escapeHtml(paper.task_id)}" data-open-reader="${escapeHtml(paper.rank)}">Open paper</button></p>`
+              : ""}
+          </article>`;
+      }).join("");
+    }
+
+    async function loadNotes() {
+      try {
+        const res = await fetch("/api/notes");
+        if (!res.ok) return;
+        const data = await res.json();
+        lastNotes = data.papers || [];
+        updateNotesCount(data.count ?? lastNotes.length);
+        if (!document.getElementById("notesPanel").hidden) {
+          renderNotesList(lastNotes);
+        }
+      } catch (_err) {
+        /* keep last known notes */
+      }
+    }
+
+    function openNotesPanel() {
+      closeReader();
+      closeStarredPanel();
+      closeReadPanel();
+      document.getElementById("notesPanel").hidden = false;
+      document.body.classList.add("starred-open");
+      loadNotes();
+    }
+
+    function closeNotesPanel() {
+      document.getElementById("notesPanel").hidden = true;
+      if (document.getElementById("starredPanel").hidden) {
+        document.body.classList.remove("starred-open");
+      }
+    }
+
+    function closeStarredPanel() {
+      document.getElementById("starredPanel").hidden = true;
+      if (document.getElementById("notesPanel").hidden && document.getElementById("selectUploadPanel").hidden) {
+        document.body.classList.remove("starred-open");
+      }
+    }
+
+    async function openSelectUploadPanel() {
+      if (!activeId) {
+        showBanner("Run or pick a research chat thread first.");
+        return;
+      }
+      closeReader();
+      closeStarredPanel();
+      closeNotesPanel();
+      document.getElementById("selectUploadPanel").hidden = false;
+      document.body.classList.add("starred-open");
+      const list = document.getElementById("selectUploadList");
+      list.innerHTML = `<p class="empty">Loading your uploaded papers…</p>`;
+      try {
+        const res = await fetch("/api/user_uploads");
+        if (!res.ok) throw new Error("Could not load your papers.");
+        const data = await res.json();
+        const uploads = data.uploads || [];
+        if (!uploads.length) {
+          list.innerHTML = `<p class="empty">No uploaded papers found yet. Use <strong>Upload PDF</strong> on the paper card to upload your research paper.</p>`;
+          return;
+        }
+        list.innerHTML = uploads.map((item) => `
+          <article class="starred-card">
+            <div class="starred-card-top">
+              <h3>${escapeHtml(item.title || "Untitled paper")}</h3>
+              <span class="src you-tag">You</span>
+            </div>
+            <p class="meta">${escapeHtml(item.original_name || item.title)}${item.page_count ? " · " + item.page_count + " pages" : ""}</p>
+            <p class="starred-actions">
+              <button type="button" class="btn-save btn-save--primary" data-add-upload-to-chat="${escapeHtml(item.id)}">+ Add to chat</button>
+              <button type="button" class="open-paper send-to-agent" data-send-to-agent="${escapeHtml(item.id)}" title="Send to AI agent to analyze findings, update Literature matrix & find matching datasets">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                Send to AI agent
+              </button>
+            </p>
+          </article>
+        `).join("");
+      } catch (err) {
+        list.innerHTML = `<p class="empty">${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    function closeSelectUploadPanel() {
+      document.getElementById("selectUploadPanel").hidden = true;
+      if (document.getElementById("starredPanel").hidden && document.getElementById("notesPanel").hidden) {
+        document.body.classList.remove("starred-open");
+      }
+    }
+
+    async function attachPaperToChat(fileOrUploadId) {
+      if (!activeId) {
+        showBanner("Select or start a chat thread first.");
+        return;
+      }
+      showBanner("Adding your paper to chat…");
+      try {
+        let res;
+        if (typeof fileOrUploadId === "string") {
+          res = await fetch(`/chats/${encodeURIComponent(activeId)}/papers?upload_id=${encodeURIComponent(fileOrUploadId)}`, {
+            method: "POST"
+          });
+        } else if (fileOrUploadId instanceof File) {
+          const formData = new FormData();
+          formData.append("file", fileOrUploadId);
+          res = await fetch(`/chats/${encodeURIComponent(activeId)}/papers`, {
+            method: "POST",
+            body: formData
+          });
+        }
+        if (!res) return;
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(errorMessage(data) || "Could not add paper to chat.");
+        if (data.already_exists) {
+          showBanner("That paper is already in this chat thread.");
+        } else {
+          showBanner("Paper added to chat with 'You' tag!");
+        }
+        await openChat(activeId);
+      } catch (err) {
+        showBanner(err.message || "Failed to add paper.");
+      }
+    }
+
+    async function sendPaperToAgent(uploadId, targetBtn) {
+      if (!uploadId) return;
+      if (!activeId) {
+        showBanner("Select or start a research chat thread first, then click Send to AI agent.");
+        return;
+      }
+      showBanner("");
+      let originalText = "";
+      if (targetBtn) {
+        originalText = targetBtn.innerHTML;
+        targetBtn.disabled = true;
+        targetBtn.innerHTML = `<span class="agent-orb mini" aria-hidden="true"><span class="orb-ring"></span></span> Analyzing with AI agent…`;
+      }
+      try {
+        const res = await fetch(`/chats/${encodeURIComponent(activeId)}/analyze_paper?upload_id=${encodeURIComponent(uploadId)}&provider=${encodeURIComponent(preferredProvider || "")}`, {
+          method: "POST"
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(errorMessage(data) || "Could not analyze paper.");
+
+        if (data && data.task) {
+          renderResults(data.task);
+        }
+        await openChat(activeId, true);
+        showBanner("AI Agent analyzed your paper! Literature matrix, dataset comparison, research gaps & draft notes updated.");
+      } catch (err) {
+        const msg = err.message || "Paper analysis failed.";
+        showBannerHtml(`
+          <div class="banner-error-row">
+            <span><b>Analysis failed:</b> ${escapeHtml(msg)}</span>
+            <button type="button" class="retry-analysis-btn" data-retry-upload="${escapeHtml(uploadId)}">Try again</button>
+          </div>
+        `);
+      } finally {
+        if (targetBtn) {
+          targetBtn.disabled = false;
+          targetBtn.innerHTML = originalText;
+        }
+      }
+    }
+
+    function closeReadPanel() {}
+
+    function openReadPanel() {
+      location.href = "/read";
+    }
+
+    async function loadLibrary() {
+      try {
+        const res = await fetch("/read/library");
+        if (!res.ok) return;
+        const data = await res.json();
+        const count = data.count ?? ((data.agent || []).length + (data.you || []).length);
+        const badge = document.getElementById("readCount");
+        if (badge) badge.textContent = String(count);
+      } catch (_err) {
+        /* ignore */
+      }
+    }
+
+
+    function jumpPage(id) {
+      const jump = jumpFor(readerState.jumps, id);
+      return jump ? jump.page : (readerState.page || 1);
+    }
+
+    function marksUrl() {
+      if (readerState.kind === "you" && readerState.uploadId) {
+        return `/read/you/${encodeURIComponent(readerState.uploadId)}/marks`;
+      }
+      return `/task/${encodeURIComponent(readerState.taskId)}/paper/${encodeURIComponent(readerState.rank)}/marks`;
+    }
+
+    function tutorUrl() {
+      if (readerState.kind === "you" && readerState.uploadId) {
+        return `/read/you/${encodeURIComponent(readerState.uploadId)}/tutor`;
+      }
+      return `/read/agent/${encodeURIComponent(readerState.taskId)}/${encodeURIComponent(readerState.rank)}/tutor`;
+    }
+
+    const READ_FLOW = {
+      cite: "Staged Reading Strategy: 1) Relevance Filter (do not read word-by-word) → 2) Technical Depth (dataset, architecture, baselines) → 3) Survey Matrix & Snowballing. Build a defensible research gap.",
+      passes: [
+        {
+          title: "Pass 1 · Relevance Filter",
+          time: "5–10 min",
+          goal: "Read Title → Abstract → Intro → Problem → Contribution → Results → Conclusion → Limits. Decide if genuinely relevant.",
+          steps: [
+            { label: "Title", jump: "intro", ask: "Analyze the title of this paper: what domain, core approach, and problem scope does it indicate?" },
+            { label: "Abstract", jump: "intro", ask: "Teach me how to read this abstract in Pass 1: what is the problem, method, and key headline result?" },
+            { label: "Introduction", jump: "intro", ask: "Where in the introduction do the authors argue why this problem matters and what prior work failed to do?" },
+            { label: "Problem", jump: "intro", ask: "Help me locate the exact problem statement in this paper. What specific failure mode or gap is being tackled?" },
+            { label: "Contribution", jump: "intro", ask: "What are the key contributions claimed by this paper? Help me find the bullet points or contribution paragraph." },
+            { label: "Results", jump: "results", ask: "What are the headline results and claims? Does the paper show convincing empirical evidence for its claims?" },
+            { label: "Conclusion", jump: "limitations", ask: "Walk me through the conclusion: what are the main takeaways, and did the authors deliver on what they promised?" },
+            { label: "Limitations", jump: "limitations", ask: "Where are the limitations and future work discussed? What boundaries or caveats did the authors disclose?" },
+          ],
+        },
+        {
+          title: "Pass 2 · Technical Depth",
+          time: "30–60 min",
+          goal: "Investigate Dataset → Preprocessing → Methodology → Architecture → Experimental Setup → Baselines → Metrics → Results → Limitations.",
+          steps: [
+            { label: "Dataset", jump: "method", ask: "What dataset or benchmarks did this paper use? Teach me how to evaluate their size, diversity, and collection process." },
+            { label: "Preprocessing", jump: "method", ask: "What preprocessing, data cleaning, filtering, or feature engineering steps did the authors apply before modeling?" },
+            { label: "Methodology", jump: "method", ask: "Explain the core methodology and theoretical formulation. What is the fundamental mechanism behind this approach?" },
+            { label: "Architecture", jump: "method", ask: "Explain the system architecture and model pipeline. What are the key modules and how do they pass data between each other?" },
+            { label: "Experimental Setup", jump: "method", ask: "How is the experimental setup designed? (train/validation/test splits, hyperparameters, hardware, and training regime)" },
+            { label: "Baselines", jump: "results", ask: "What baselines or competing models did the authors compare against? Are these fair, modern state-of-the-art baselines?" },
+            { label: "Metrics", jump: "results", ask: "What quantitative metrics were used to evaluate performance (accuracy, F1, latency, error rates), and what do they show?" },
+            { label: "Results & Ablations", jump: "results", ask: "Walk me through the results tables and ablation experiments. Which component contributed the most to the improvement?" },
+            { label: "Limitations", jump: "limitations", ask: "What are the deep technical limitations, failure modes, edge cases, and computational trade-offs of this method?" },
+          ],
+        },
+        {
+          title: "Pass 3 · Survey Matrix & Snowballing",
+          time: "synthesis",
+          goal: "Record immediately in Literature Survey Matrix. Snowball references backward and forward to build a defensible research gap.",
+          steps: [
+            { label: "Record to Matrix", jump: "intro", ask: "Generate the Literature Survey Matrix row for this paper: Paper ID | Problem | Dataset | Method | Contribution | Results | Limitations | Relevance | Possible Gap." },
+            { label: "Backward Snowballing", jump: "related", ask: "Guide me on Backward Snowballing for this paper: which foundational references cited in this paper should I read next to understand the origin of this problem?" },
+            { label: "Forward Snowballing", jump: "related", ask: "Guide me on Forward Snowballing for this paper: how do I track newer papers that cite this work, and how do I verify if their gap has already been solved?" },
+            { label: "Defensible Gap", jump: "related", ask: "Two papers are insufficient to prove a research gap. Teach me how to synthesize limitations across multiple papers into a defensible, novel research gap." },
+          ],
+        },
+      ],
+    };
+
+    function renderReadFlow() {
+      const jumps = readerState.jumps || [];
+      const passes = READ_FLOW.passes.map((pass) => `
+        <div class="flow-pass">
+          <h4>${escapeHtml(pass.title)}</h4>
+          <p class="flow-time">${escapeHtml(pass.time)}</p>
+          <p class="flow-goal">${escapeHtml(pass.goal)}</p>
+          <ol>${pass.steps.map((step) => {
+            const jump = jumpFor(jumps, step.jump);
+            const page = jump ? jump.page : "";
+            return `<li>
+              <button type="button" data-flow-jump="${escapeHtml(step.jump)}" data-flow-page="${escapeHtml(page)}">${escapeHtml(step.label)}${page ? ` · p.${escapeHtml(page)}` : ""}</button>
+              <button type="button" class="ghost" data-flow-ask="${escapeHtml(step.ask)}">Ask</button>
+            </li>`;
+          }).join("")}</ol>
+        </div>`).join("");
+      document.getElementById("readFlow").innerHTML = `
+        <p class="flow-cite">${escapeHtml(READ_FLOW.cite)}</p>
+        <div class="flow-grid">${passes}</div>`;
+    }
+
+    function renderTutorLog(messages) {
+      const log = document.getElementById("tutorLog");
+      const rows = messages || [];
+      if (!rows.length) {
+        log.innerHTML = `<div class="tutor-bubble tutor-bubble-ai">
+          <p>I am a reading tutor for this paper only. I remember this chat next time you open it.</p>
+          <p>Ask me to walk you through Pass 1, or say “I can’t find the gap.” I will teach the technique, then point to evidence you must check in the PDF.</p>
+          <p>I will not write a paragraph you can paste into a proposal.</p>
+        </div>`;
+        return;
+      }
+      log.innerHTML = rows.map((item) => {
+        const mine = item.role === "user";
+        const html = mine ? `<p>${escapeHtml(item.content || "")}</p>` : renderMarkdown(item.content || "");
+        return `<div class="tutor-bubble ${mine ? "tutor-bubble-me" : "tutor-bubble-ai"}">${html}</div>`;
+      }).join("");
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function fillTutorProvider() {
+      const sel = document.getElementById("tutorProvider");
+      if (!sel) return;
+      Array.from(sel.options).forEach((opt) => {
+        if (opt.value === "openai") opt.disabled = !openaiConfigured;
+        if (opt.value === "gemini") opt.disabled = !geminiConfigured;
+      });
+    }
+
+    async function sendTutor() {
+      const input = document.getElementById("tutorInput");
+      const text = (input.value || "").trim();
+      if (!text) return;
+      if (!readerState.taskId && !readerState.uploadId) return;
+      input.value = "";
+      readerState.tutor = (readerState.tutor || []).concat([{ role: "user", content: text }]);
+      renderTutorLog(readerState.tutor);
+      const thinking = document.createElement("div");
+      thinking.className = "tutor-bubble tutor-bubble-ai";
+      thinking.id = "tutorPending";
+      thinking.innerHTML = "<p>Reading with you…</p>";
+      document.getElementById("tutorLog").appendChild(thinking);
+      try {
+        const res = await fetch(tutorUrl(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+          body: JSON.stringify({
+            message: text,
+            provider: document.getElementById("tutorProvider").value || "",
+          }),
+        });
+        thinking.remove();
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(typeof data.detail === "string" ? data.detail : "The tutor could not answer.");
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let full = "";
+        const bubble = document.createElement("div");
+        bubble.className = "tutor-bubble tutor-bubble-ai";
+        document.getElementById("tutorLog").appendChild(bubble);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split("\n\n");
+          buffer = chunks.pop() || "";
+          for (const chunk of chunks) {
+            const line = chunk.split("\n").find((item) => item.startsWith("data:"));
+            if (!line) continue;
+            let data = {};
+            try {
+              data = JSON.parse(line.replace(/^data:\s*/, ""));
+            } catch (_err) {
+              continue;
+            }
+            if (data.error) throw new Error(data.error);
+            if (data.delta) {
+              full += data.delta;
+              bubble.innerHTML = renderMarkdown(full);
+              document.getElementById("tutorLog").scrollTop = document.getElementById("tutorLog").scrollHeight;
+            }
+          }
+        }
+        if (!full.trim()) throw new Error("The tutor had nothing to say. Try again.");
+        readerState.tutor = (readerState.tutor || []).concat([{ role: "assistant", content: full }]);
+      } catch (err) {
+        if (thinking.parentNode) thinking.remove();
+        readerState.tutor = (readerState.tutor || []).concat([{ role: "assistant", content: err.message || "Could not reach the tutor. Check your connection or provider settings." }]);
+        renderTutorLog(readerState.tutor);
+      }
+    }
+
+    let readerState = {
+      taskId: "",
+      rank: "",
+      kind: "agent",
+      uploadId: "",
+      pdfUrl: "",
+      jumps: [],
+      page: 1,
+      pageCount: 1,
+      pdfDoc: null,
+      marks: [],
+      tutor: [],
+      meta: { research_name: "", title: "", year: "", authors: "" },
+    };
+    let marksTimer = null;
+
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/static/vendor/pdf.worker.min.js";
+    }
+
+    function jumpFor(jumps, id) {
+      return (jumps || []).find((item) => item.id === id) || null;
+    }
+
+    function fieldJumpId(field) {
+      if (field === "problem" || field === "why_read" || field === "key_findings") return "intro";
+      if (field === "datasets" || field === "features" || field === "method") return "method";
+      if (field === "metrics") return "results";
+      if (field === "limitations") return "limitations";
+      if (field === "related") return "related";
+      return "intro";
+    }
+
+    function closeReader() {
+      document.getElementById("readerPanel").hidden = true;
+      document.body.classList.remove("reader-open");
+      document.getElementById("readerPdf").innerHTML = "";
+      if (readerState.pdfDoc && readerState.pdfDoc.destroy) {
+        try { readerState.pdfDoc.destroy(); } catch (_err) { /* ignore */ }
+      }
+      readerState.pdfDoc = null;
+    }
+
+    function selectedPdfText() {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) return "";
+      const holder = document.getElementById("readerPdf");
+      if (!holder.contains(sel.anchorNode)) return "";
+      return String(sel.toString() || "").replace(/\s+/g, " ").trim();
+    }
+
+    function highlightMarksOnPage() {
+      const layer = document.querySelector("#readerPdf .textLayer");
+      if (!layer) return;
+      const quotes = (readerState.marks || [])
+        .filter((mark) => Number(mark.page) === Number(readerState.page) && (mark.text || "").length > 8)
+        .map((mark) => String(mark.text).toLowerCase());
+      layer.querySelectorAll("span").forEach((span) => {
+        const text = (span.textContent || "").toLowerCase();
+        const hit = quotes.some((quote) => quote.includes(text) || text.includes(quote.slice(0, 40)));
+        span.classList.toggle("mark-hit", Boolean(text.trim()) && hit);
+      });
+    }
+
+    async function showPdfPage(page, jumpId) {
+      const holder = document.getElementById("readerPdf");
+      const missing = document.getElementById("readerMissing");
+      const bar = document.getElementById("pdfBar");
+      if (!readerState.pdfUrl) return;
+      missing.hidden = true;
+      holder.hidden = false;
+      bar.hidden = false;
+      const renderId = (readerState.renderId || 0) + 1;
+      readerState.renderId = renderId;
+      const safePage = Math.max(1, Math.min(readerState.pageCount || 1, Number(page) || 1));
+      readerState.page = safePage;
+      document.getElementById("pdfPageInput").value = String(safePage);
+      document.getElementById("pdfPageCount").textContent = `/ ${readerState.pageCount || 1}`;
+      document.querySelectorAll("#readerJumps [data-jump-id], #readerExtract [data-jump-id]").forEach((el) => {
+        el.classList.toggle("on", jumpId && el.dataset.jumpId === jumpId);
+      });
+      if (!readerState.pdfDoc && window.pdfjsLib) {
+        readerState.pdfDoc = await pdfjsLib.getDocument(readerState.pdfUrl).promise;
+        readerState.pageCount = readerState.pdfDoc.numPages || readerState.pageCount || 1;
+        document.getElementById("pdfPageCount").textContent = `/ ${readerState.pageCount}`;
+      }
+      if (!readerState.pdfDoc) {
+        holder.innerHTML = "";
+        const embed = document.createElement("embed");
+        embed.type = "application/pdf";
+        embed.title = "Paper PDF";
+        embed.src = `${readerState.pdfUrl}#page=${safePage}&view=FitH`;
+        holder.appendChild(embed);
+        return;
+      }
+      const pdfPage = await readerState.pdfDoc.getPage(safePage);
+      if (renderId !== readerState.renderId) return;
+      const wrapWidth = Math.max(320, holder.clientWidth || 720);
+      const unscaled = pdfPage.getViewport({ scale: 1 });
+      const scale = Math.min(1.6, Math.max(0.9, wrapWidth / unscaled.width));
+      const viewport = pdfPage.getViewport({ scale });
+      holder.innerHTML = "";
+      const pageEl = document.createElement("div");
+      pageEl.className = "reader-page";
+      pageEl.style.width = `${viewport.width}px`;
+      pageEl.style.height = `${viewport.height}px`;
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const textLayer = document.createElement("div");
+      textLayer.className = "textLayer";
+      textLayer.style.width = `${viewport.width}px`;
+      textLayer.style.height = `${viewport.height}px`;
+      textLayer.style.setProperty("--scale-factor", String(scale));
+      pageEl.appendChild(canvas);
+      pageEl.appendChild(textLayer);
+      holder.appendChild(pageEl);
+      await pdfPage.render({ canvasContext: context, viewport }).promise;
+      if (renderId !== readerState.renderId) return;
+      const textContent = await pdfPage.getTextContent();
+      if (pdfjsLib.renderTextLayer) {
+        const task = pdfjsLib.renderTextLayer({
+          textContent,
+          textContentSource: textContent,
+          container: textLayer,
+          viewport,
+          textDivs: [],
+        });
+        if (task && task.promise) await task.promise;
+      }
+      highlightMarksOnPage();
+    }
+
+    function readerNote(label, text, jumps, field) {
+      const value = String(text || "").trim();
+      if (!value) return "";
+      const jump = jumpFor(jumps, fieldJumpId(field));
+      const page = jump ? jump.page : 1;
+      const id = jump ? jump.id : "intro";
+      return `<button type="button" class="reader-field" data-jump-page="${page}" data-jump-id="${id}">
+        <strong>${escapeHtml(label)}</strong>
+        <span>${escapeHtml(value)}</span>
+      </button>`;
+    }
+
+    function setReaderTab(name) {
+      const which = name === "extract" ? "extract" : name === "marks" ? "marks" : "guide";
+      document.getElementById("tabGuide").classList.toggle("on", which === "guide");
+      document.getElementById("tabMarks").classList.toggle("on", which === "marks");
+      document.getElementById("tabExtract").classList.toggle("on", which === "extract");
+      document.getElementById("guidePanel").hidden = which !== "guide";
+      document.getElementById("marksPanel").hidden = which !== "marks";
+      document.getElementById("readerExtract").hidden = which !== "extract";
+    }
+
+    function renderReaderMeta() {
+      const meta = readerState.meta || {};
+      const year = meta.year ? String(meta.year) : "";
+      document.getElementById("readerMeta").innerHTML = `
+        <p class="notes-kicker">${escapeHtml(meta.research_name || "Untitled research")}</p>
+        <h3>${escapeHtml(meta.title || "Untitled paper")}</h3>
+        <p class="meta">${year ? escapeHtml(year) : "Year not set"}${meta.authors ? " · " + escapeHtml(meta.authors) : ""}</p>`;
+    }
+
+    function renderMarksList() {
+      const list = document.getElementById("marksList");
+      const marks = readerState.marks || [];
+      const countEl = document.getElementById("readerMarkCount");
+      if (countEl) countEl.textContent = String(marks.length);
+      if (!marks.length) {
+        list.innerHTML = `<p class="empty">Select a sentence in the PDF, then click Mark. Page number is saved with the quote.</p>`;
+        return;
+      }
+      list.innerHTML = marks.map((mark, index) => `
+        <article class="mark-card" data-mark-id="${escapeHtml(mark.id)}">
+          <div class="mark-card-top">
+            <button type="button" class="note-page" data-jump-mark="${escapeHtml(mark.page)}">p.${escapeHtml(mark.page)}</button>
+            <span class="mark-move">
+              <button type="button" data-move="-1" ${index === 0 ? "disabled" : ""} title="Move up">↑</button>
+              <button type="button" data-move="1" ${index === marks.length - 1 ? "disabled" : ""} title="Move down">↓</button>
+            </span>
+            <button type="button" class="ghost mark-remove" data-delete-mark="${escapeHtml(mark.id)}">Remove</button>
+          </div>
+          <blockquote>${escapeHtml(mark.text || "")}</blockquote>
+          <textarea data-note-mark="${escapeHtml(mark.id)}" placeholder="Your note in your own words">${escapeHtml(mark.note || "")}</textarea>
+        </article>
+      `).join("");
+    }
+
+    function marksPayload() {
+      const meta = readerState.meta || {};
+      return {
+        research_name: meta.research_name || "",
+        title: meta.title || "",
+        year: meta.year || "",
+        authors: meta.authors || "",
+        marks: readerState.marks || [],
+      };
+    }
+
+    async function persistMarks() {
+      if (!readerState.taskId && !readerState.uploadId) return;
+      const res = await fetch(marksUrl(), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(marksPayload()),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Could not save marks.");
+      readerState.marks = data.marks || [];
+      readerState.meta = {
+        research_name: data.research_name || "",
+        title: data.title || "",
+        year: data.year || "",
+        authors: data.authors || "",
+      };
+      document.getElementById("marksHint").textContent = "Saved.";
+      highlightMarksOnPage();
+      loadNotes();
+    }
+
+    function queueSaveMarks() {
+      clearTimeout(marksTimer);
+      marksTimer = setTimeout(() => {
+        persistMarks().catch((err) => {
+          document.getElementById("marksHint").textContent = err.message || "Could not save.";
+        });
+      }, 400);
+    }
+
+    async function addCurrentMark() {
+      const text = selectedPdfText();
+      if (!text) {
+        document.getElementById("marksHint").textContent = "Select text in the PDF first, then click Mark.";
+        return;
+      }
+      if (!readerState.taskId && !readerState.uploadId) return;
+      readerState.marks = (readerState.marks || []).concat([{
+        id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `m-${Date.now()}`,
+        page: readerState.page || 1,
+        text,
+        note: "",
+      }]);
+      renderMarksList();
+      highlightMarksOnPage();
+      try {
+        await persistMarks();
+        document.getElementById("marksHint").textContent = `Marked p.${readerState.page}. Add your own note below.`;
+      } catch (err) {
+        document.getElementById("marksHint").textContent = err.message || "Could not save that mark.";
+      }
+      const last = document.querySelector("#marksList .mark-card:last-child textarea");
+      if (last) last.focus();
+    }
+
+    async function openReader(taskId, rank, options) {
+      options = options || {};
+      const uploadId = String(options.uploadId || "").trim();
+      if (uploadId) {
+        location.href = `/read?upload=${encodeURIComponent(uploadId)}`;
+        return;
+      }
+      const id = String(taskId || "").trim();
+      const paperRank = String(rank || "").trim();
+      if (!id || !paperRank) return;
+      location.href = `/read?task=${encodeURIComponent(id)}&rank=${encodeURIComponent(paperRank)}`;
+    }
+
+    async function toggleStar(key) {
+      if (!key) return;
+      try {
+        if (starredKeys.has(key)) {
+          await fetch(`/api/stars?key=${encodeURIComponent(key)}`, { method: "DELETE" });
+        } else {
+          const paper = lastPapers.find((item) => paperKey(item) === key);
+          if (!paper) return;
+          await fetch("/api/stars", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paper,
+              task_id: lastTaskMeta.id || activeId || "",
+              chat_title: lastTaskMeta.title || "",
+            }),
+          });
+        }
+        await loadStars();
+      } catch (err) {
+        showBanner(err.message || "Could not update starred papers.");
+      }
+    }
+
+    function setActiveChat(id, idea) {
+      activeId = id || null;
+      if (id) {
+        localStorage.setItem("literature-lab-chat", id);
+        history.replaceState(null, "", `#chat/${id}`);
+      } else {
+        localStorage.removeItem("literature-lab-chat");
+        history.replaceState(null, "", location.pathname);
+      }
+      if (idea) {
+        userBubbleEl.hidden = false;
+        userIdeaEl.textContent = idea;
+      } else if (!id) {
+        userBubbleEl.hidden = true;
+        userIdeaEl.textContent = "";
+      }
+      document.querySelectorAll(".chat-row").forEach((el) => {
+        el.classList.toggle("active", el.dataset.id === id);
+      });
+    }
+
+    function clipTitle(value) {
+      const words = String(value || "").trim().split(/\s+/).filter(Boolean);
+      let text = words.slice(0, 25).join(" ");
+      if (text.length > 160) text = text.slice(0, 160).trim();
+      return text;
+    }
+
+    function renderChats(chats) {
+      if (!chats.length) {
+        chatListEl.innerHTML = `<p class="hint">No saved research yet.</p>`;
+        return;
+      }
+      chatListEl.innerHTML = chats.map((chat) => {
+        const full = clipTitle(chat.title || "Untitled research");
+        return `
+        <div class="chat-row${chat.id === activeId ? " active" : ""}" data-id="${escapeHtml(chat.id)}" data-title="${escapeHtml(full)}">
+          <button class="chat-item" type="button" data-open="1" title="${escapeHtml(full)}">
+            <span class="chat-title">${escapeHtml(full)}</span>
+            <small>
+              ${escapeHtml(chat.status)} · ${escapeHtml((chat.updated_at || chat.created_at || "").replace("T", " ").slice(0, 16))}
+              ${chat.usd ? `<span class="chat-spend">${escapeHtml(chat.usd)}</span>` : ""}
+            </small>
+          </button>
+          <span class="chat-actions">
+            <button class="icon-btn" type="button" data-rename="1" title="Rename" aria-label="Rename">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="icon-btn danger" type="button" data-delete="1" title="Delete" aria-label="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            </button>
+          </span>
+        </div>
+      `;
+      }).join("");
+
+      chatListEl.querySelectorAll(".chat-row").forEach((row) => {
+        const id = row.dataset.id;
+        row.querySelector("[data-open]").addEventListener("click", () => openChat(id));
+        row.querySelector("[data-rename]").addEventListener("click", (event) => {
+          event.stopPropagation();
+          startRename(row, id);
+        });
+        row.querySelector("[data-delete]").addEventListener("click", async (event) => {
+          event.stopPropagation();
+          const title = (row.dataset.title || row.querySelector(".chat-title").textContent).trim();
+          const confirmed = await askDelete(title);
+          if (!confirmed) return;
+          try {
+            const res = await fetch(`/chats/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Could not delete that chat.");
+            if (id === activeId) newChat();
+            else loadChats();
+          } catch (err) {
+            showBanner(err.message);
+          }
+        });
+      });
+    }
+
+    function startRename(row, id) {
+      const titleEl = row.querySelector(".chat-title");
+      const current = titleEl.textContent.trim();
+      row.classList.add("renaming");
+
+      const input = document.createElement("input");
+      input.className = "chat-rename";
+      input.value = current;
+      input.maxLength = 160;
+      input.setAttribute("aria-label", "Rename research");
+      titleEl.replaceWith(input);
+      input.focus();
+      input.select();
+
+      let closed = false;
+      const finish = async (save) => {
+        if (closed) return;
+        closed = true;
+        row.classList.remove("renaming");
+        const value = clipTitle(input.value);
+        if (save && value && value !== current) {
+          try {
+            const res = await fetch(`/chats/${id}/rename`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ title: value }),
+            });
+            if (!res.ok) throw new Error("Could not rename that chat.");
+          } catch (err) {
+            showBanner(err.message);
+          }
+        }
+        loadChats();
+      };
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") finish(true);
+        if (event.key === "Escape") finish(false);
+      });
+      input.addEventListener("blur", () => finish(true));
+    }
+
+    async function loadChats() {
+      try {
+        const res = await fetch("/chats");
+        if (!res.ok) {
+          chatListEl.innerHTML = `<p class="hint">Could not load saved research.</p>`;
+          return;
+        }
+        const data = await res.json();
+        renderChats(data.chats || []);
+      } catch (_err) {
+        chatListEl.innerHTML = `<p class="hint">Could not load saved research.</p>`;
+      }
+    }
+
+    const CORPUS_FALLBACK = {
+      arxiv: 3140000,
+      openalex: 324000000,
+      semantic_scholar: 200000000,
+      pubmed: 40000000,
+    };
+
+    function formatCorpus(count) {
+      const n = Number(count) || 0;
+      if (n >= 1e9) {
+        const value = n / 1e9;
+        return `about ${value >= 10 ? value.toFixed(0) : String(value.toFixed(1)).replace(/\.0$/, "")} billion papers`;
+      }
+      if (n >= 1e6) {
+        const value = n / 1e6;
+        const shown = value >= 100 ? value.toFixed(0) : String(value.toFixed(1)).replace(/\.0$/, "");
+        return `about ${shown} million papers`;
+      }
+      if (n >= 1000) return `about ${n.toLocaleString()} papers`;
+      return n ? `${n} papers` : "";
+    }
+
+    function withCorpus(list) {
+      const byId = {};
+      sourceCatalog.forEach((item) => { byId[item.id] = item; });
+      return (list || []).map((item) => {
+        const known = byId[item.id] || {};
+        const corpus = item.corpus || known.corpus || CORPUS_FALLBACK[item.id] || 0;
+        const corpus_label = item.corpus_label || known.corpus_label || formatCorpus(corpus);
+        return { ...item, corpus, corpus_label };
+      });
+    }
+
+    function sourceCountLabel(source) {
+      if (source.error && !(source.corpus || source.corpus_label)) return "unavailable";
+      return source.corpus_label || formatCorpus(source.corpus) || source.site || "";
+    }
+
+    function renderSources(counts, meta) {
+      const scored = Boolean(counts && counts.length && counts.some((s) => s.kept || s.found));
+      const list = withCorpus(scored ? counts : sourceCatalog);
+      if (!list.length) {
+        sourcesEl.innerHTML = "";
+        return;
+      }
+      const note = scored
+        ? `This search used ${list.reduce((sum, s) => sum + (s.kept || 0), 0)} unique papers from ${(meta && meta.window) || `the last ${recentYears} years`}.`
+        : `Each line is how many papers that library holds. Searches look at the last ${recentYears} years.`;
+      sourcesEl.innerHTML = `
+        <p class="sources-blurb">Literature Lab searches papers in these 4 libraries.</p>
+        <ul class="source-lines">
+          ${list.map((s) => {
+            const title = s.error ? `${s.site} · ${s.error}` : s.site;
+            return `<li class="${s.error ? "down" : ""}" title="${escapeHtml(title)}"><b>${escapeHtml(s.name)}</b> <span>${escapeHtml(sourceCountLabel(s))}</span></li>`;
+          }).join("")}
+        </ul>
+        <p class="sources-note">${escapeHtml(note)}</p>`;
+    }
+
+    async function loadSources() {
+      try {
+        const res = await fetch("/sources");
+        if (!res.ok) return;
+        const data = await res.json();
+        sourceCatalog = data.sources || [];
+        recentYears = data.recent_years || recentYears;
+      } catch (_err) {
+        /* ignore */
+      }
+      renderSources();
+    }
+
+    function renderSteps(progress, task) {
+      const items = progress && progress.length ? progress : DEFAULT_STEPS.map((s) => ({ ...s, status: "pending", detail: "" }));
+      stepsEl.innerHTML = items.map((step) => {
+        const status = step.status || "pending";
+        const working = status === "running";
+        const failed = status === "error";
+        const mark = working
+          ? `<span class="agent-orb" aria-hidden="true"><span class="orb-ring"></span><span class="orb-ring alt"></span><span class="orb-core"></span></span>`
+          : `<span class="dot"></span>`;
+        const detail = working
+          ? `<span class="ai-working"><span class="think"><i></i><i></i><i></i></span> ${escapeHtml(step.detail || step.label)}</span>`
+          : escapeHtml(step.detail || status || "waiting");
+        return `
+        <li class="${status}">
+          ${mark}
+          <div>
+            <div class="step-label">${escapeHtml(step.label)}${working ? '<span class="live">live</span>' : ""}${failed ? '<span class="step-stopped">stopped</span>' : ""}</div>
+            <div class="step-detail">${detail}</div>
+          </div>
+        </li>`;
+      }).join("");
+      showRetryBar(task);
+    }
+
+    function showRetryBar(task) {
+      const bar = document.getElementById("retryBar");
+      const textEl = document.getElementById("retryText");
+      const btn = document.getElementById("retryRun");
+      if (!bar || !textEl) return;
+      const failed = ((task && task.progress) || []).find((step) => step.status === "error");
+      const stopped = task && task.status === "error";
+      if (!stopped && !failed) {
+        bar.hidden = true;
+        return;
+      }
+      const done = ((task && task.progress) || []).filter((step) => step.status === "done");
+      const lastDone = done.length ? done[done.length - 1].label : "";
+      const failLabel = (failed && failed.label) || "This step";
+      const raw = (failed && failed.detail) || (task && task.error) || "";
+      textEl.textContent = raw && raw.length < 280
+        ? raw
+        : `${failLabel} stopped.${lastDone ? " " + lastDone + " is saved." : ""} Click Try again to continue from here.`;
+      bar.hidden = false;
+      if (btn) btn.disabled = false;
+    }
+
+    function renderSpend(usage) {
+      const run = (usage && usage.this_run) || {};
+      const total = (usage && usage.total) || {};
+      runSpendEl.textContent = run.usd_display || "$0.0000";
+      totalSpendEl.textContent = total.usd_display || "$0.0000";
+    }
+
+    function costCard(usage) {
+      const run = (usage && usage.this_run) || {};
+      const total = (usage && usage.total) || {};
+      return `
+        <div class="cost-card">
+          <div><span>Input tokens</span><strong>${escapeHtml(run.prompt_tokens || 0)}</strong></div>
+          <div><span>Output tokens</span><strong>${escapeHtml(run.completion_tokens || 0)}</strong></div>
+          <div><span>This run</span><strong>${escapeHtml(run.usd_display || "$0.0000")}</strong></div>
+          <div><span>Total spent</span><strong>${escapeHtml(total.usd_display || "$0.0000")}</strong></div>
+        </div>
+        <p class="hint">${escapeHtml(run.calls || 0)} AI calls · ${escapeHtml(run.total_tokens || 0)} tokens this run</p>
+      `;
+    }
+
+    function clipCell(value, limit) {
+      const text = String(value || "").replace(/\s+/g, " ").trim();
+      if (!text) return "-";
+      if (text.length <= limit) return text;
+      return text.slice(0, limit - 1) + "...";
+    }
+
+    function bestDatasetUrl(item) {
+      return (item && (item.homepage || item.hf_url || item.search_url)) || "";
+    }
+
+    function matchDatasets(paper, datasets) {
+      const blob = `${paper.datasets || ""} ${paper.title || ""}`.toLowerCase();
+      const hits = (datasets || []).filter((item) => {
+        const name = (item.name || "").trim();
+        return name.length >= 3 && blob.includes(name.toLowerCase());
+      });
+      if (hits.length) return hits;
+      return (datasets || []).filter((item) => (item.papers || []).some((p) => p.rank === paper.rank));
+    }
+
+    function matrixRows(papers, datasets) {
+      return (papers || []).map((paper, index) => {
+        const rank = paper.rank || index + 1;
+        const authors = (paper.authors || []).slice(0, 4).join(", ");
+        const matched = matchDatasets(paper, datasets);
+        const names = matched.map((item) => item.name).filter(Boolean).join(", ");
+        const url = bestDatasetUrl(matched[0] || {});
+        return {
+          paper: `P${rank}`,
+          rank,
+          hasPdf: Boolean(paper.pdf_path || paper.has_pdf),
+          title: paper.title || "",
+          year: paper.year || "",
+          authors,
+          problem: paper.problem || "",
+          dataset: names || paper.datasets || "",
+          datasetUrl: url,
+          features: paper.features || "",
+          method: paper.method || "",
+          metrics: paper.metrics || paper.key_findings || "",
+          limitations: paper.limitations || "",
+          url: paper.url || "",
+        };
+      });
+    }
+
+    function renderMatrix(papers, taskId, datasets) {
+      const rows = matrixRows(papers, datasets);
+      if (!rows.length) {
+        return `<p class="empty">No papers to put in the matrix yet.</p>`;
+      }
+      const body = rows.map((row) => `
+        <tr>
+          <td class="matrix-id">${row.hasPdf
+            ? `<button type="button" class="matrix-read" data-open-reader="${escapeHtml(row.rank)}" title="Read this PDF in the app">${escapeHtml(row.paper)}</button>`
+            : escapeHtml(row.paper)}</td>
+          <td>
+            ${row.url
+              ? `<a href="${escapeHtml(row.url)}" target="_blank" rel="noreferrer">${escapeHtml(row.title)}</a>`
+              : escapeHtml(row.title)}
+            ${row.year ? `<div class="matrix-sub">${escapeHtml(String(row.year))}${row.authors ? " · " + escapeHtml(row.authors) : ""}</div>` : ""}
+          </td>
+          <td>${escapeHtml(row.problem || "-")}</td>
+          <td>
+            ${row.datasetUrl
+              ? `<a href="${escapeHtml(row.datasetUrl)}" target="_blank" rel="noreferrer">${escapeHtml(row.dataset || "Open dataset")}</a>`
+              : escapeHtml(row.dataset || "-")}
+          </td>
+          <td>${escapeHtml(row.features || "-")}</td>
+          <td>${escapeHtml(row.method || "-")}</td>
+          <td>${escapeHtml(row.metrics || "-")}</td>
+          <td>${escapeHtml(row.limitations || "-")}</td>
+        </tr>
+      `).join("");
+      return `
+        <div class="section-head">
+          <div>
+            <h2>Literature matrix</h2>
+            <p class="read-notice">Use this to decide what to read. Open the paper, then write your own notes. Do not paste this into a proposal.</p>
+          </div>
+          <a class="ghost matrix-download" href="/task/${encodeURIComponent(taskId)}/matrix.xlsx">Download Excel</a>
+        </div>
+        <div class="matrix-wrap">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Paper</th>
+                <th>Title</th>
+                <th>Problem / Task</th>
+                <th>Dataset</th>
+                <th>Features</th>
+                <th>Model / Method</th>
+                <th>Metrics</th>
+                <th>Limitations</th>
+              </tr>
+            </thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function datasetFeasibility(item) {
+      const value = String(item.feasibility || "").toLowerCase();
+      if (value === "easy" || value === "medium" || value === "hard") return value;
+      const access = String(item.access || "").toLowerCase();
+      if (access === "public") return "easy";
+      if (access === "on request") return "medium";
+      return item.access ? "hard" : "";
+    }
+
+    function renderDatasetCompare(datasets) {
+      const list = datasets || [];
+      if (!list.length) return "";
+      const body = list.map((item) => {
+        const papers = (item.papers || []).map((paper) => paper.url
+          ? `<a href="${escapeHtml(paper.url)}" target="_blank" rel="noreferrer">${paper.rank ? `P${escapeHtml(paper.rank)}` : "paper"}</a>`
+          : escapeHtml(paper.rank ? `P${paper.rank}` : "")
+        ).filter(Boolean).join(" ");
+        const link = bestDatasetUrl(item);
+        const level = datasetFeasibility(item);
+        const note = item.feasibility_note || "";
+        return `
+          <tr>
+            <th scope="row">
+              ${link
+                ? `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">${escapeHtml(item.name)}</a>`
+                : escapeHtml(item.name || "Untitled")}
+            </th>
+            <td>${escapeHtml(item.kind || "-")}</td>
+            <td>${escapeHtml(item.size || "-")}</td>
+            <td>${escapeHtml(item.access || "-")}</td>
+            <td>${escapeHtml(item.strengths || item.about || "-")}</td>
+            <td>${escapeHtml(item.limitations || "-")}</td>
+            <td>${level
+              ? `<span class="feasib ${escapeHtml(level)}">${escapeHtml(level)}</span>${note ? `<div class="matrix-sub">${escapeHtml(note)}</div>` : ""}`
+              : "-"}</td>
+            <td>${papers || "-"}</td>
+          </tr>`;
+      }).join("");
+      return `
+        <div class="compare-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Dataset</th>
+                <th>Kind</th>
+                <th>Size</th>
+                <th>Access</th>
+                <th>Strengths</th>
+                <th>Limitations</th>
+                <th>Feasibility</th>
+                <th>Papers</th>
+              </tr>
+            </thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function renderResults(task) {
+      const usage = (task && task.usage && Object.keys(task.usage).length ? task.usage : null)
+        || (task && task.result && task.result.usage)
+        || {};
+      renderSpend(usage);
+      if (task && task.idea) {
+        userBubbleEl.hidden = false;
+        userIdeaEl.textContent = task.idea;
+      }
+      if (!task || task.status !== "done" || !task.result) {
+        if (task && (task.status === "running" || task.status === "error")) {
+          const note = task.status === "error"
+            ? "A step stopped. Finished work is kept on this chat. Use Try again under Agents."
+            : "Agents are working. Ranked papers will appear here.";
+          resultsEl.innerHTML = `${costCard(usage)}<p class="empty">${note}</p>`;
+        }
+        return;
+      }
+      const result = task.result;
+      renderSources(result.sources, { window: result.search_window });
+      const papers = result.papers || [];
+      lastPapers = papers;
+      lastTaskMeta = { id: task.id || "", title: task.title || task.idea || "" };
+      const gaps = result.gaps || [];
+      const tags = (result.plan && (result.plan.tags || result.plan.queries)) || [];
+      const tagHtml = tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
+      const audit = (result.plan && result.plan.tag_audit) || {};
+      const dropped = audit.dropped || [];
+      const auditHtml = (audit.note || dropped.length)
+        ? `<details class="audit">
+             <summary>Keyword check${dropped.length ? ` · ${dropped.length} dropped` : ""}</summary>
+             ${audit.note ? `<p>${escapeHtml(audit.note)}</p>` : ""}
+             ${dropped.length ? `<ul>${dropped.map((d) => `<li><b>${escapeHtml(d.tag)}</b> — ${escapeHtml(d.reason)}</li>`).join("")}</ul>` : ""}
+           </details>`
+        : "";
+      let hasAddedYouDivider = false;
+      const paperHtml = papers.map((paper, index) => {
+        const pages = (paper.pages_read || []).join(", ");
+        const read = paper.read_strategy
+          ? `${escapeHtml(paper.read_strategy)}${paper.page_count ? " · " + paper.page_count + " pages" : ""}${pages ? " · read " + escapeHtml(pages) : ""}`
+          : "";
+        const isYou = paper.kind === "you" || paper.source === "You" || paper.is_user_upload;
+        const offTopic = !isYou && paper.verified === "checked" && paper.fits_idea === false;
+
+        let dividerHtml = "";
+        if (isYou && !hasAddedYouDivider && index > 0) {
+          hasAddedYouDivider = true;
+          dividerHtml = `
+            <div class="you-papers-divider">
+              <span class="red-line"></span>
+              <span class="you-divider-tag">You</span>
+              <span class="red-line"></span>
+            </div>`;
+        }
+
+        const badge = isYou
+          ? `<span class="badge you-badge">You</span>`
+          : (paper.verified === "checked"
+            ? `<span class="badge ${offTopic ? "warn" : "ok"}">${offTopic ? "weak fit" : "verified fit"}${paper.confidence != null ? " · " + escapeHtml(paper.confidence) : ""}</span>`
+            : "");
+        const sourceHtml = isYou
+          ? `<span class="src you-tag">You</span>`
+          : `<span class="src">${escapeHtml(paper.source || "arXiv")}</span>`;
+        const whyRead = paper.why_read || paper.why_it_matters || "";
+        const key = paperKey(paper);
+        const starred = starredKeys.has(key);
+        const uploadId = paper.upload_id || (paper.kind === "you" && paper.id) || (paper.paper_key && String(paper.paper_key).startsWith("upload:") ? String(paper.paper_key).split(":")[1] : "");
+        const authorsText = Array.isArray(paper.authors) ? paper.authors.slice(0, 4).join(", ") : (paper.authors || "You");
+        const rankNum = paper.rank || (index + 1);
+
+        const titleUrl = paper.url || (uploadId ? `/read?upload=${encodeURIComponent(uploadId)}` : "");
+        const titleHtml = titleUrl
+          ? `<a href="${escapeHtml(titleUrl)}" ${uploadId ? `data-open-upload="${encodeURIComponent(uploadId)}"` : 'target="_blank" rel="noreferrer"'}>${escapeHtml(paper.title)}</a>`
+          : escapeHtml(paper.title);
+
+        return `
+        ${dividerHtml}
+        <article class="paper${offTopic ? " off-topic" : ""}${isYou ? " paper-you" : ""}">
+          <div class="paper-top">
+            <div class="rank">#${escapeHtml(rankNum)}</div>
+            <div class="paper-body">
+              <div class="paper-title-row">
+                <h3>${titleHtml}</h3>
+                <button type="button" class="star-btn${starred ? " on" : ""}" data-star-key="${escapeHtml(key)}" aria-pressed="${starred ? "true" : "false"}" aria-label="${starred ? "Remove from starred papers" : "Star this paper"}" title="${starred ? "Starred — click to remove" : "Star this paper"}">&#9733;</button>
+              </div>
+              <p class="meta">${escapeHtml(authorsText)}${paper.year ? " · " + paper.year : ""} · score <span class="score">${escapeHtml(paper.score)}</span> ${badge}</p>
+              <p class="meta">
+                ${sourceHtml}
+                ${(paper.also_in || []).map((s) => `<span class="src alt">${escapeHtml(s)}</span>`).join("")}
+                ${paper.is_dataset ? `<span class="src data">dataset</span>` : ""}
+                ${paper.venue ? escapeHtml(paper.venue) : ""}
+                ${paper.citations != null ? ` · ${escapeHtml(paper.citations)} citations` : ""}
+              </p>
+              ${read ? `<p class="meta">${read}</p>` : ""}
+              ${whyRead ? `<details class="why-read">
+                <summary><span class="why-tag">Why read this paper</span></summary>
+                <p>${escapeHtml(whyRead)}</p>
+                ${paper.verdict ? `<p class="verdict">${escapeHtml(paper.verdict)}</p>` : ""}
+              </details>` : ""}
+              <p class="findings"><strong>Findings.</strong> ${escapeHtml(paper.key_findings)}</p>
+              <p class="meta paper-actions">
+                ${uploadId
+                  ? `<button type="button" class="open-paper read-in-app" data-open-upload="${escapeHtml(uploadId)}">Read in app</button>
+                     <button type="button" class="open-paper send-to-agent" data-send-to-agent="${escapeHtml(uploadId)}" title="Send to AI agent to analyze findings, update Literature matrix & find matching datasets">
+                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                       Send to AI agent
+                     </button>`
+                  : paper.pdf_path || paper.has_pdf
+                  ? `<button type="button" class="open-paper read-in-app" data-open-reader="${escapeHtml(paper.rank || "")}">Read in app</button>`
+                  : `<span>Abstract only</span>`}
+                ${paper.url ? `<a class="open-paper" href="${escapeHtml(paper.url)}" target="_blank" rel="noreferrer">Open on the web</a>` : ""}
+              </p>
+            </div>
+          </div>
+        </article>`;
+      }).join("");
+
+      const addUserPaperCardHtml = activeId ? `
+        <article class="add-user-paper-card" id="addUserPaperCard">
+          <div class="add-paper-content">
+            <div class="add-paper-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+            </div>
+            <div>
+              <h4>Add your research paper</h4>
+              <p class="hint">Upload a PDF or attach a paper from "Your papers" to include it in this chat thread with a <strong>You</strong> tag.</p>
+            </div>
+          </div>
+          <div class="add-paper-btn-group">
+            <label class="btn-upload-paper" title="Upload a PDF file from your device">
+              <input type="file" id="chatPdfInput" accept=".pdf" style="display:none;" />
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Upload PDF
+            </label>
+            <button type="button" class="btn-select-upload" id="btnSelectUpload" title="Select a paper from your uploaded library">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Select from Your papers
+            </button>
+          </div>
+        </article>
+      ` : "";
+
+      const datasetHtml = (result.datasets || []).map((set) => {
+        const chips = [
+          set.kind ? `<span class="chip kind">${escapeHtml(set.kind)}</span>` : "",
+          set.size ? `<span class="chip">${escapeHtml(set.size)}</span>` : "",
+          set.access ? `<span class="chip access ${set.access === "public" ? "ok" : ""}">${escapeHtml(set.access)}</span>` : "",
+        ].join("");
+        const fromPapers = (set.papers || []).map((p) => `
+          <a class="flow-node paper" href="${escapeHtml(p.url || "#")}" target="_blank" rel="noreferrer"
+             title="${escapeHtml(p.title || "")}">
+            ${p.rank ? `#${escapeHtml(p.rank)} ` : ""}${escapeHtml((p.title || "paper").slice(0, 38))}${(p.title || "").length > 38 ? "…" : ""}
+          </a>`).join("") || `<span class="flow-node paper muted">papers</span>`;
+        const links = [
+          set.homepage ? `<a href="${escapeHtml(set.homepage)}" target="_blank" rel="noreferrer">Homepage</a>` : "",
+          set.hf_url ? `<a href="${escapeHtml(set.hf_url)}" target="_blank" rel="noreferrer">Hugging Face</a>` : "",
+          set.search_url ? `<a href="${escapeHtml(set.search_url)}" target="_blank" rel="noreferrer">Web search</a>` : "",
+        ].filter(Boolean).join(`<i>·</i>`);
+        return `
+        <article class="dataset">
+          <div class="ds-top">
+            <span class="ds-icon" title="${escapeHtml(set.kind || "")}">${DATA_ICONS[set.kind] || "◇"}</span>
+            <div class="ds-head">
+              <h4>${escapeHtml(set.name)}</h4>
+              <p class="ds-chips">${chips}</p>
+            </div>
+          </div>
+          <div class="ds-flow">
+            <div class="flow-col">${fromPapers}</div>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node data">${escapeHtml(set.name)}</span>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node idea">your idea</span>
+          </div>
+          ${set.about ? `<p class="ds-about">${escapeHtml(set.about)}</p>` : ""}
+          ${set.why_useful ? `<p class="ds-why"><strong>Why this helps</strong> ${escapeHtml(set.why_useful)}</p>` : ""}
+          ${links ? `<p class="ds-links">${links}</p>` : ""}
+        </article>`;
+      }).join("");
+      const gapHtml = gaps.map((gap) => {
+        const links = (gap.supported_by || []).map((paper) => paper.url
+          ? `<a class="gap-paper" href="${escapeHtml(paper.url)}" target="_blank" rel="noreferrer" title="${escapeHtml(paper.title || "")}">${escapeHtml(paper.id)}</a>`
+          : `<span class="gap-paper">${escapeHtml(paper.id)}</span>`
+        ).join("");
+        return `
+        <article class="gap">
+          <h4>${escapeHtml(gap.title)}</h4>
+          <p>${escapeHtml(gap.detail)}</p>
+          <p>${escapeHtml(gap.opportunity)}</p>
+          ${links ? `<p class="gap-read">Read: ${links}</p>` : ""}
+        </article>`;
+      }).join("");
+      const sourceTally = withCorpus(result.sources || []).map((s) => {
+        return `${s.name} ${s.corpus_label || formatCorpus(s.corpus)}`;
+      }).filter((line) => !line.endsWith(" ")).join(" · ");
+      resultsEl.innerHTML = `
+        ${costCard(result.usage || usage)}
+        <p class="hint search-tally">${sourceTally
+          ? `Libraries: ${escapeHtml(sourceTally)}.`
+          : `Searches arXiv, OpenAlex, Semantic Scholar, and PubMed.`} ${escapeHtml(result.candidates_count || 0)} unique papers from this search · top ${escapeHtml(result.paper_count || papers.length)} read · ${escapeHtml(result.search_window || "last 7 years")}</p>
+        <div class="tags">${tagHtml}</div>
+        ${auditHtml}
+        <div class="papers">${paperHtml || "<p class='empty'>No papers ranked.</p>"}${addUserPaperCardHtml}</div>
+        ${renderMatrix(papers, task.id, result.datasets || [])}
+        <div class="section-head">
+          <div>
+            <h2>Dataset comparison</h2>
+            <p class="read-notice">Every dataset named in these papers, side by side. Check the papers before you pick one.</p>
+          </div>
+          <span class="hint">${(result.datasets || []).length} compared</span>
+        </div>
+        ${renderDatasetCompare(result.datasets || []) || "<p class='empty'>No datasets were named in these papers.</p>"}
+        ${datasetHtml ? `<div class="dataset-grid">${datasetHtml}</div>` : ""}
+        <div class="section-head">
+          <div>
+            <h2>Research gaps</h2>
+            <p class="read-notice">Draft hints from the papers. Open the linked papers and write the gap in your own words.</p>
+          </div>
+        </div>
+        <div class="gaps">${gapHtml || "<p class='empty'>No gaps listed.</p>"}</div>
+        <div id="gapCheckArea"></div>
+        <div class="report">
+          <div class="report-toolbar">
+            <div>
+              <h2>Reading notes (draft)</h2>
+              <p class="read-notice">Use this to decide what to read. Do not paste this into a proposal unchanged.</p>
+            </div>
+            <button class="ghost" id="copy" type="button">Copy draft notes</button>
+          </div>
+          <div class="markdown" id="report">${renderMarkdown(result.report || "")}</div>
+        </div>
+      `;
+      const copyBtn = document.getElementById("copy");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          const notice = "Use this to decide what to read. Open the paper, then write your own notes. Do not paste this into a proposal.\n\n";
+          await navigator.clipboard.writeText(notice + (result.report || ""));
+          copyBtn.textContent = "Copied draft";
+          setTimeout(() => { copyBtn.textContent = "Copy draft notes"; }, 1200);
+        });
+      }
+
+      // Show the Re-research button if we have gaps
+      if (gaps.length > 0) {
+        renderGapCheckArea(task.id, papers, gaps, (result.gap_check || null));
+      }
+    }
+
+    // ── Gap Check UI ────────────────────────────────────────────────────────
+
+    function renderGapCheckArea(taskId, papers, gaps, existingGapCheck) {
+      const area = document.getElementById("gapCheckArea");
+      if (!area) return;
+
+      const gcStatus = (existingGapCheck || {}).status || "not_started";
+      const gcResults = (existingGapCheck || {}).results || [];
+      const gcProgress = (existingGapCheck || {}).progress || "";
+      const gcError = (existingGapCheck || {}).error || "";
+      const gcLogs = (existingGapCheck || {}).logs || [];
+
+      if (gcStatus === "running") {
+        area.innerHTML = `
+          <div class="gap-check-running-box">
+            <div class="gap-check-running-top">
+              <div class="gap-check-running-title">
+                <span class="agent-orb" aria-hidden="true"><span class="orb-ring"></span><span class="orb-ring alt"></span><span class="orb-core"></span></span>
+                <span class="gap-check-running-text">${escapeHtml(gcProgress || "AI is checking if gaps are solved by recent papers\u2026")}</span>
+              </div>
+              <button class="gap-check-btn danger" id="stopGapCheckBtn" type="button">🛑 Stop Agent</button>
+            </div>
+            ${renderGapCheckLogsCollapsible(gcLogs, true)}
+          </div>`;
+
+        document.getElementById("stopGapCheckBtn")?.addEventListener("click", async () => {
+          const btn = document.getElementById("stopGapCheckBtn");
+          if (btn) btn.disabled = true;
+          try {
+            await fetch(`/chats/${encodeURIComponent(taskId)}/gap_check/stop`, { method: "POST" });
+          } catch (_e) {}
+        });
+
+        // Poll for completion
+        pollGapCheck(taskId, papers, gaps);
+        return;
+      }
+
+      if (gcStatus === "stopped") {
+        area.innerHTML = `
+          <div class="gap-check-header">
+            <div>
+              <h2>🔬 Re-research: Find the Gap</h2>
+              <p class="read-notice">Agent run was stopped. Below are partial results and logs collected so far.</p>
+            </div>
+            <div class="gap-check-actions" style="display:flex;gap:8px;align-items:center;">
+              ${gcResults.length > 0 ? `<a class="gap-check-btn gap-export-btn" id="exportGapExcelBtn" href="/task/${taskId}/gap_check.xlsx" download title="Download gap analysis as Excel (.xlsx)">📊 Download Excel</a>` : ""}
+              <button class="gap-check-btn" id="reRunGapCheckBtn" type="button">Try again</button>
+            </div>
+          </div>
+          ${renderGapCheckLogsCollapsible(gcLogs, false)}
+          ${gcResults.length > 0 ? renderGapCheckResults(gcResults, gaps) : ""}
+        `;
+        document.getElementById("reRunGapCheckBtn")?.addEventListener("click", () => openGapCheckModal(taskId, papers, gaps));
+        attachLogToggleListeners();
+        return;
+      }
+
+      if (gcStatus === "done" && gcResults.length > 0) {
+        area.innerHTML = `
+          <div class="gap-check-header">
+            <div>
+              <h2>🔬 Re-research: Find the Gap</h2>
+              <p class="read-notice">Results from checking whether recent papers (last 2 years) have solved the identified gaps.</p>
+            </div>
+            <div class="gap-check-actions" style="display:flex;gap:8px;align-items:center;">
+              <a class="gap-check-btn gap-export-btn" id="exportGapExcelBtn" href="/task/${taskId}/gap_check.xlsx" download title="Download gap analysis and source papers as Excel (.xlsx)">📊 Download Excel</a>
+              <button class="gap-check-btn" id="reRunGapCheckBtn" type="button">Run again</button>
+            </div>
+          </div>
+          ${renderCitationFlowDiagram(gcResults, papers, gaps)}
+          ${renderGapCheckLogsCollapsible(gcLogs, false)}
+          ${renderGapCheckResults(gcResults, gaps)}
+        `;
+        document.getElementById("reRunGapCheckBtn")?.addEventListener("click", () => openGapCheckModal(taskId, papers, gaps));
+        attachLogToggleListeners();
+        return;
+      }
+
+      if (gcStatus === "error") {
+        const isCredits = /quota|credit|limit|billing|rate/i.test(gcError);
+        area.innerHTML = `
+          <div class="gap-check-error-row">
+            <span class="gap-check-error-msg">⚠️ ${escapeHtml(gcError || "An error occurred.")}</span>
+            <span class="gap-check-error-actions">
+              ${isCredits ? `<select class="gap-check-provider-select" id="gcProviderSelect" title="Switch model provider">
+                <option value="">Current model</option>
+                <option value="openai">OpenAI</option>
+                <option value="gemini">Gemini</option>
+              </select>` : ""}
+              <button class="gap-check-btn" type="button" id="retryGapCheckBtn">Try again</button>
+            </span>
+          </div>
+          ${renderGapCheckLogsCollapsible(gcLogs, false)}
+        `;
+        document.getElementById("retryGapCheckBtn")?.addEventListener("click", () => {
+          const sel = document.getElementById("gcProviderSelect");
+          const chosenProvider = sel ? sel.value : "";
+          openGapCheckModal(taskId, papers, gaps, chosenProvider);
+        });
+        attachLogToggleListeners();
+        return;
+      }
+
+      // Default: not_started — show trigger button
+      area.innerHTML = `
+        <div class="gap-check-trigger">
+          <div class="gap-check-trigger-info">
+            <strong>🔬 Re-research: Find the Gap</strong>
+            <span>Check if any of the identified research gaps have been solved by papers published in the last 2 years.</span>
+          </div>
+          <button class="gap-check-btn" id="openGapCheckModalBtn" type="button">Select papers & run</button>
+        </div>`;
+      document.getElementById("openGapCheckModalBtn")?.addEventListener("click", () => openGapCheckModal(taskId, papers, gaps));
+    }
+
+    function renderGapCheckLogsCollapsible(logs, defaultOpen) {
+      if (!logs || !logs.length) return "";
+      const logItems = logs.map((l) => {
+        const msg = l.msg || "";
+        const isDeepDive = msg.includes("↳ Deep Dive");
+        return `
+        <div class="gap-log-line${isDeepDive ? " deep-dive" : ""}">
+          <span class="gap-log-time">${escapeHtml(l.time || "")}</span>
+          <span class="gap-log-msg">${escapeHtml(msg)}</span>
+        </div>`;
+      }).join("");
+
+      return `
+        <details class="gap-logs-details" ${defaultOpen ? "open" : ""}>
+          <summary class="gap-logs-summary">
+            <span>📋 View Agent Search Logs (${logs.length} step${logs.length === 1 ? "" : "s"})</span>
+            <small>arXiv · OpenAlex · Semantic Scholar · PubMed · Deep Dive</small>
+          </summary>
+          <div class="gap-logs-body">${logItems}</div>
+        </details>`;
+    }
+
+    function attachLogToggleListeners() {
+      // Reserved for collapsible behavior if needed
+    }
+
+    function renderDownstreamBlock(ds) {
+      if (!ds) return "";
+      const dsSolved = ds.solved;
+      const dsVerdict = dsSolved
+        ? `<span class="gap-downstream-verdict solved">✅ Solved</span>`
+        : `<span class="gap-downstream-verdict open">❌ Still Open</span>`;
+
+      const dsSolverCards = (ds.solving_papers || []).map((p) => `
+        <div class="gap-solver-paper">
+          <a class="paper-link" href="${escapeHtml(p.url || "#")}" target="_blank" rel="noreferrer">📄 ${escapeHtml(p.title || "Untitled")}</a>
+          <span class="meta">${p.year ? escapeHtml(String(p.year)) : ""} · ${escapeHtml(p.source || "arXiv")}</span>
+        </div>`).join("");
+
+      const dsCheckedCards = (ds.evaluated_papers || []).map((p) => `
+        <div class="gap-checked-paper-item">
+          <a href="${escapeHtml(p.url || "#")}" target="_blank" rel="noreferrer" class="paper-link">${escapeHtml(p.title || "Untitled")}</a>
+          <span class="meta">${p.year ? escapeHtml(String(p.year)) : ""} · ${escapeHtml(p.source || "arXiv")}</span>
+        </div>`).join("");
+
+      return `
+        <div class="gap-downstream-section">
+          <div class="gap-downstream-title">↳ Downstream Gap Analysis</div>
+          <div class="gap-downstream-row">
+            <span class="gap-downstream-label">New Limitation:</span>
+            <span class="gap-downstream-value">${escapeHtml(ds.gap || "")}</span>
+          </div>
+          <div class="gap-downstream-row">
+            <span class="gap-downstream-label">Search Filter:</span>
+            <span class="gap-downstream-value">${escapeHtml(ds.search_filter || "")}</span>
+          </div>
+          <div class="gap-downstream-row">
+            <span class="gap-downstream-label">Downstream Verdict:</span>
+            <span>${dsVerdict}</span>
+            ${dsSolved ? dsSolverCards : ""}
+          </div>
+          ${ds.reasoning ? `<div class="gap-downstream-row"><span class="gap-downstream-label">Reasoning:</span><span class="gap-downstream-value">${escapeHtml(ds.reasoning)}</span></div>` : ""}
+          ${!dsSolved && ds.opportunity ? `
+            <div class="gap-downstream-row">
+              <span class="gap-downstream-label">Research Opportunity:</span>
+              <span class="gap-downstream-value opportunity">${escapeHtml(ds.opportunity)}</span>
+            </div>` : ""}
+          ${dsCheckedCards ? `
+            <details class="gap-checked-papers-details" style="margin-top:0.5rem;">
+              <summary>🔎 View ${ds.evaluated_papers.length} downstream candidate(s) checked</summary>
+              <div class="gap-checked-papers-list">${dsCheckedCards}</div>
+            </details>` : ""}
+        </div>`;
+    }
+
+    // ── Citation Flow Diagram ────────────────────────────────────────────────
+    function renderCitationFlowDiagram(gcResults, sourcePapers, allGaps) {
+      // Layout: left-to-right columns per depth level
+      // Col 0: root gap    Col 1: solver    Col 2: DS gap    Col 3: DS solver    Col 4: DS2 gap ...
+      // Recursive chains scroll right horizontally.
+
+      const NODE_W = 205, NODE_H = 124, GAP_X = 50, ROW_GAP = 28;
+
+      // Flatten each gap + its full recursive downstream chain into a list of "chain columns"
+      // Returns { cols: [{type, data}], openAt: colIndex }
+      function buildChain(r, idx) {
+        const cols = [];
+        // Resolve supported_by if missing or empty in r
+        let supporters = r.supported_by || [];
+        if ((!supporters || supporters.length === 0) && Array.isArray(allGaps)) {
+          const match = allGaps.find(g => (g.title || "").trim().toLowerCase() === (r.gap_title || "").trim().toLowerCase());
+          if (match && match.supported_by) {
+            supporters = match.supported_by;
+          }
+        }
+        // Col 0: Root gap
+        cols.push({
+          type: "root-gap",
+          solved: r.solved,
+          gap: r.gap_title || `Gap ${idx+1}`,
+          solvers: r.solving_papers || [],
+          supported_by: supporters || []
+        });
+        if (r.solved && (r.solving_papers||[]).length > 0) {
+          cols.push({ type: "solver", paper: r.solving_papers[0] });
+          let ds = r.downstream;
+          while (ds) {
+            cols.push({ type: "ds-gap", solved: ds.solved, gap: ds.gap || "", depth: ds.depth || 1 });
+            if (ds.solved && (ds.solving_papers||[]).length > 0) {
+              cols.push({ type: "solver", paper: ds.solving_papers[0] });
+            }
+            ds = ds.solved ? (ds.downstream || null) : null;
+          }
+        }
+        return cols;
+      }
+
+      const chains = gcResults.map((r, i) => buildChain(r, i));
+      const maxCols = Math.max(...chains.map(c => c.length), 2);
+      const totalW = maxCols * (NODE_W + GAP_X) + 20;
+      const rowH = NODE_H + ROW_GAP;
+      const totalH = chains.length * rowH + 20;
+
+      let svgParts = [];
+      let foHtml = [];
+
+      svgParts.push(`<defs>
+        <marker id="arr-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+        <marker id="arr-red"    markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f87171"/></marker>
+        <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#a78bfa"/></marker>
+        <marker id="arr-amber"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+      </defs>`);
+
+      chains.forEach((cols, ri) => {
+        const cy = ri * rowH + 10;
+        const midY = cy + NODE_H / 2;
+
+        // Row separator
+        if (ri > 0) {
+          svgParts.push(`<line x1="0" y1="${cy - ROW_GAP/2}" x2="${totalW}" y2="${cy - ROW_GAP/2}" stroke="rgba(139,92,246,0.1)" stroke-width="1"/>`);
+        }
+
+        cols.forEach((node, ci) => {
+          const nx = ci * (NODE_W + GAP_X);
+
+          // Draw arrow from previous node
+          if (ci > 0) {
+            const prevX = (ci - 1) * (NODE_W + GAP_X) + NODE_W;
+            const prevNode = cols[ci - 1];
+            let arrowColor = "#34d399", markerId = "arr-green", arrowLabel = "solves gap";
+
+            if (node.type === "ds-gap") {
+              // Arrow from solver → downstream gap
+              if (node.solved) {
+                arrowColor = "#a78bfa"; markerId = "arr-purple"; arrowLabel = "new gap";
+              } else {
+                arrowColor = "#fbbf24"; markerId = "arr-amber"; arrowLabel = "new gap";
+              }
+            } else if (node.type === "solver" && ci > 1) {
+              // Deeper solver
+              arrowColor = "#34d399"; markerId = "arr-green"; arrowLabel = "solves";
+            }
+
+            svgParts.push(`<line x1="${prevX}" y1="${midY}" x2="${nx - 2}" y2="${midY}"
+              stroke="${arrowColor}" stroke-width="1.6" stroke-dasharray="${node.type === 'ds-gap' ? '5 3' : 'none'}"
+              marker-end="url(#${markerId})"/>`);
+            svgParts.push(`<text x="${prevX + ((nx - prevX)/2)}" y="${midY - 5}" text-anchor="middle"
+              font-size="8" fill="${arrowColor}" font-family="inherit">${escapeHtml(arrowLabel)}</text>`);
+          }
+
+          // Draw node box
+          if (node.type === "root-gap") {
+            const fill = node.solved ? "#34d39914" : "#f8717114";
+            const stroke = node.solved ? "#34d399" : "#f87171";
+            const badge = node.solved ? "solved" : "open";
+            const label = node.solved ? "✅ Solved" : "❌ Still Open";
+
+            const supporters = node.supported_by || [];
+            let sourcePillsHtml = "";
+            let sourceSubtitleHtml = "";
+
+            if (supporters.length > 0) {
+              const pills = supporters.map(s => {
+                const sid = typeof s === "object" ? (s.id || (s.rank ? `P${s.rank}` : "Paper")) : String(s);
+                const stitle = typeof s === "object" ? (s.title || sid) : sid;
+                const surl = typeof s === "object" ? s.url : "";
+                if (surl) {
+                  return `<a href="${escapeHtml(surl)}" target="_blank" rel="noreferrer" class="flow-source-pill" title="${escapeHtml(stitle)}">${escapeHtml(sid)}</a>`;
+                }
+                return `<span class="flow-source-pill" title="${escapeHtml(stitle)}">${escapeHtml(sid)}</span>`;
+              }).join("");
+
+              sourcePillsHtml = `<div class="flow-source-group" title="Derived from source papers">${pills}</div>`;
+
+              const firstPaper = supporters[0];
+              const firstTitle = typeof firstPaper === "object" ? (firstPaper.title || "") : "";
+              if (firstTitle) {
+                const cleanTitle = firstTitle.replace(/^[^:]+:\s*/, "");
+                const snippet = cleanTitle.length > 25 ? cleanTitle.slice(0, 23) + "…" : cleanTitle;
+                sourceSubtitleHtml = `<div class="flow-node-source-subtitle" title="${escapeHtml(firstTitle)}">from: ${escapeHtml(snippet)}</div>`;
+              }
+            }
+
+            svgParts.push(`<rect x="${nx}" y="${cy}" width="${NODE_W}" height="${NODE_H}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`);
+            foHtml.push(`<foreignObject x="${nx}" y="${cy}" width="${NODE_W}" height="${NODE_H}">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-node-card ${node.solved ? 'solver' : 'open-gap'}">
+                <div class="flow-node-header-row">
+                  <div class="flow-node-label ${node.solved ? 'solver' : 'open-gap'}">Gap ${ri+1}</div>
+                  ${sourcePillsHtml}
+                </div>
+                ${sourceSubtitleHtml}
+                <div class="flow-node-title">${escapeHtml((node.gap||"").slice(0,70))}</div>
+                <span class="flow-node-badge ${badge}">${label}</span>
+              </div>
+            </foreignObject>`);
+
+            // If not solved: draw dashed arrow + opportunity box
+            if (!node.solved) {
+              const nx2 = NODE_W + GAP_X;
+              svgParts.push(`<line x1="${NODE_W}" y1="${midY}" x2="${nx2 - 2}" y2="${midY}"
+                stroke="#f87171" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-red)"/>`);
+              svgParts.push(`<text x="${NODE_W + GAP_X/2}" y="${midY - 5}" text-anchor="middle"
+                font-size="8" fill="#f87171" font-family="inherit">no solution found</text>`);
+              svgParts.push(`<rect x="${nx2}" y="${cy}" width="${NODE_W}" height="${NODE_H}"
+                rx="12" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.3)" stroke-width="1.5" stroke-dasharray="6 3"/>`);
+              foHtml.push(`<foreignObject x="${nx2}" y="${cy}" width="${NODE_W}" height="${NODE_H}">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="flow-node-card open-gap">
+                  <div class="flow-node-label open-gap">Research Opportunity</div>
+                  <div class="flow-node-title" style="opacity:0.6;font-style:italic">No recent paper solves this gap yet</div>
+                  <span class="flow-node-badge open">❌ Still Open</span>
+                </div>
+              </foreignObject>`);
+            }
+
+          } else if (node.type === "solver") {
+            const p = node.paper;
+            svgParts.push(`<rect x="${nx}" y="${cy}" width="${NODE_W}" height="${NODE_H}" rx="12" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="1.5"/>`);
+            foHtml.push(`<foreignObject x="${nx}" y="${cy}" width="${NODE_W}" height="${NODE_H}">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-node-card solver">
+                <div class="flow-node-label solver">Solving Paper</div>
+                <div class="flow-node-title">
+                  ${p.url ? `<a href="${escapeHtml(p.url)}" target="_blank" rel="noreferrer" style="color:#34d399;text-decoration:none;">${escapeHtml((p.title||"Untitled").slice(0,75))}</a>` : escapeHtml((p.title||"Untitled").slice(0,75))}
+                </div>
+                <div class="flow-node-meta">${escapeHtml(p.year ? String(p.year) : "")} · ${escapeHtml(p.source||"arXiv")}</div>
+              </div>
+            </foreignObject>`);
+
+          } else if (node.type === "ds-gap") {
+            const depthNum = node.depth || 1;
+            const dsColors = node.solved
+              ? { fill: "rgba(167,139,250,0.1)", stroke: "#a78bfa", badge: "ds-solved", label: `↳ L${depthNum}: ✅ Solved` }
+              : { fill: "rgba(251,191,36,0.08)", stroke: "#fbbf24", badge: "ds-open",   label: `↳ L${depthNum}: ❌ Open` };
+            svgParts.push(`<rect x="${nx}" y="${cy}" width="${NODE_W}" height="${NODE_H}" rx="12" fill="${dsColors.fill}" stroke="${dsColors.stroke}" stroke-width="1.5"/>`);
+            foHtml.push(`<foreignObject x="${nx}" y="${cy}" width="${NODE_W}" height="${NODE_H}">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-node-card downstream">
+                <div class="flow-node-label downstream">Downstream L${depthNum}</div>
+                <div class="flow-node-title">${escapeHtml((node.gap||"").slice(0,80))}</div>
+                <span class="flow-node-badge ${dsColors.badge}">${dsColors.label}</span>
+              </div>
+            </foreignObject>`);
+          }
+        });
+      });
+
+      const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" style="font-family:inherit">
+        ${svgParts.join("\n")}
+        ${foHtml.join("\n")}
+      </svg>`;
+
+      const legendHtml = `
+        <div class="gap-flow-legend">
+          <span><span class="legend-dot solver"></span>Solving paper</span>
+          <span><span class="legend-dot open-gap"></span>Still open gap</span>
+          <span><span class="legend-dot downstream"></span>Downstream level</span>
+          <span><span style="display:inline-block;width:22px;height:2px;background:#34d399;margin-right:4px;"></span>Solved</span>
+          <span><span style="display:inline-block;width:22px;height:2px;border-top:2px dashed #fbbf24;margin-right:4px;"></span>Open (opportunity)</span>
+        </div>`;
+
+      return `<div class="gap-flow-section">
+        <div class="gap-flow-header">
+          <div>
+            <h3>🔗 Citation Flow Diagram</h3>
+            <p>Recursive chain: Gap → Solver → Downstream gap → … until ❌ open (scroll right for deep chains)</p>
+          </div>
+          ${legendHtml}
+        </div>
+        <div class="gap-flow-canvas-wrap">${svgStr}</div>
+      </div>`;
+    }
+
+    function renderGapCheckResults(gcResults, allGaps) {
+      return gcResults.map((r) => {
+        const solved = r.solved;
+        let supporters = r.supported_by || [];
+        if ((!supporters || supporters.length === 0) && Array.isArray(allGaps)) {
+          const match = allGaps.find(g => (g.title || "").trim().toLowerCase() === (r.gap_title || "").trim().toLowerCase());
+          if (match && match.supported_by) {
+            supporters = match.supported_by;
+          }
+        }
+        const sourceLinks = supporters.map((p) => {
+          const pid = typeof p === "object" ? (p.id || (p.rank ? `P${p.rank}` : "Paper")) : String(p);
+          const ptitle = typeof p === "object" ? (p.title || "") : "";
+          const purl = typeof p === "object" ? p.url : "";
+          return purl
+            ? `<a class="gap-paper" href="${escapeHtml(purl)}" target="_blank" rel="noreferrer" title="${escapeHtml(ptitle)}">📄 <strong>${escapeHtml(pid)}</strong>${escapeHtml(ptitle ? `: ${ptitle.slice(0, 40)}…` : "")}</a>`
+            : `<span class="gap-paper">📄 <strong>${escapeHtml(pid)}</strong>${escapeHtml(ptitle ? `: ${ptitle.slice(0, 40)}…` : "")}</span>`;
+        }).join(" · ");
+
+        const solverCards = (r.solving_papers || []).map((p) => `
+          <div class="gap-solver-paper">
+            <a class="paper-link" href="${escapeHtml(p.url || "#")}" target="_blank" rel="noreferrer">📄 ${escapeHtml(p.title || "Untitled")}</a>
+            <span class="meta">${p.year ? escapeHtml(String(p.year)) : ""} · ${escapeHtml(p.source || "arXiv")}</span>
+          </div>`).join("");
+
+        const checkedPaperCards = (r.evaluated_papers || []).map((p) => `
+          <div class="gap-checked-paper-item">
+            <a href="${escapeHtml(p.url || "#")}" target="_blank" rel="noreferrer" class="paper-link">${escapeHtml(p.title || "Untitled")}</a>
+            <span class="meta">${p.year ? escapeHtml(String(p.year)) : ""} · ${escapeHtml(p.source || "arXiv")}</span>
+          </div>`).join("");
+
+        const queriesList = (r.queries_used || []).map((q) => `<li><code>${escapeHtml(q)}</code></li>`).join("");
+
+        return `
+          <div class="gap-check-card ${solved ? "gap-solved" : "gap-open"}">
+            <div class="gap-check-card-header">
+              <span class="gap-check-badge">${solved ? "✅ Solved" : "❌ Still Open"}</span>
+              <h4>${escapeHtml(r.gap_title || "")}</h4>
+            </div>
+            ${sourceLinks ? `<div class="gap-check-source-row" style="font-size:11px;color:#93c5fd;margin:4px 0 8px 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><strong>Selected from paper(s):</strong> ${sourceLinks}</div>` : ""}
+            <p class="gap-check-detail">${escapeHtml(r.gap_detail || "")}</p>
+            ${solved ? `
+              <div class="gap-check-solvers">
+                <strong>Papers addressing this gap:</strong>
+                ${solverCards}
+              </div>
+              ${r.reasoning ? `<p class="gap-check-reasoning">💡 ${escapeHtml(r.reasoning)}</p>` : ""}
+              ${renderDownstreamBlock(r.downstream || null)}
+            ` : `
+              <div class="gap-check-queries">
+                <strong>Queries searched (arXiv · OpenAlex · Semantic Scholar · PubMed):</strong>
+                <ul>${queriesList}</ul>
+              </div>
+              ${r.reasoning ? `<p class="gap-check-reasoning">💡 ${escapeHtml(r.reasoning)}</p>` : ""}
+            `}
+            ${checkedPaperCards ? `
+              <details class="gap-checked-papers-details">
+                <summary>🔎 View all ${r.evaluated_papers.length} candidate paper(s) checked for this gap</summary>
+                <div class="gap-checked-papers-list">${checkedPaperCards}</div>
+              </details>
+            ` : ""}
+          </div>`;
+      }).join("");
+    }
+
+    function openGapCheckModal(taskId, papers, gaps, preselectedProvider) {
+      const existing = document.getElementById("gapCheckModal");
+      if (existing) existing.remove();
+
+      const paperCheckboxes = papers.filter((p) => p.kind !== "you").map((p) => `
+        <label class="gap-paper-row">
+          <input type="checkbox" class="gap-paper-cb" value="${p.rank || 0}" checked>
+          <span><strong>#${escapeHtml(p.rank)}</strong> ${escapeHtml(p.title || "Untitled")}</span>
+        </label>`).join("");
+
+      // Detect currently selected main research provider for intelligent label
+      const activeProvider = document.querySelector('input[name="aiProvider"]:checked')?.value || "openai";
+      const activeProviderLabel = activeProvider === "gemini" ? "Gemini Flash" : "OpenAI GPT-4o";
+
+      const initialVal = preselectedProvider || "";
+      let initialLabel = "Current model";
+      let initialIcon = "⚡";
+      if (initialVal === "openai") {
+        initialLabel = "OpenAI GPT-4o";
+        initialIcon = "🟢";
+      } else if (initialVal === "gemini") {
+        initialLabel = "Gemini Flash";
+        initialIcon = "✨";
+      }
+
+      const modal = document.createElement("div");
+      modal.id = "gapCheckModal";
+      modal.className = "gap-check-modal-overlay";
+      modal.innerHTML = `
+        <div class="gap-check-modal" role="dialog" aria-modal="true" aria-label="Select papers for gap check">
+          <div class="gap-check-modal-header">
+            <div>
+              <h3>🔬 Re-research: Find the Gap</h3>
+              <p>Select papers whose gaps you want to check against recent publications (last 2 years).</p>
+            </div>
+            <button class="ghost" id="closeGapModal" type="button" aria-label="Close">✕</button>
+          </div>
+          <div class="gap-check-modal-controls">
+            <button type="button" class="ghost" id="selectAllGapPapers">Select all</button>
+            <button type="button" class="ghost" id="deselectAllGapPapers">Deselect all</button>
+          </div>
+          <div class="gap-check-paper-list" id="gapPaperList">
+            ${paperCheckboxes || "<p class='empty'>No papers available.</p>"}
+          </div>
+          <div class="gap-check-modal-footer">
+            <span class="hint" id="gapPaperCount">${papers.filter(p => p.kind !== "you").length} papers selected</span>
+            <span class="gap-modal-right">
+              <div class="gap-custom-dropdown" id="gcDropdownWrap">
+                <input type="hidden" id="gcModalProvider" value="${initialVal}" />
+                <button type="button" class="gap-dropdown-btn" id="gcDropdownBtn" aria-haspopup="listbox" aria-expanded="false" title="Choose AI model">
+                  <span class="gap-dropdown-btn-label">
+                    <span class="gap-dropdown-icon">${initialIcon}</span>
+                    <span class="gap-dropdown-text">${initialLabel}</span>
+                  </span>
+                  <svg class="gap-dropdown-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div class="gap-dropdown-menu" id="gcDropdownMenu" role="listbox">
+                  <div class="gap-dropdown-item ${!initialVal ? "is-active" : ""}" data-value="" role="option" aria-selected="${!initialVal}">
+                    <span class="gap-item-icon">⚡</span>
+                    <div class="gap-item-info">
+                      <span class="gap-item-title">Current model</span>
+                      <span class="gap-item-sub">Session active (${activeProviderLabel})</span>
+                    </div>
+                    <span class="gap-item-check">✓</span>
+                  </div>
+                  <div class="gap-dropdown-item ${initialVal === "openai" ? "is-active" : ""}" data-value="openai" role="option" aria-selected="${initialVal === "openai"}">
+                    <span class="gap-item-icon">🟢</span>
+                    <div class="gap-item-info">
+                      <span class="gap-item-title">OpenAI GPT-4o</span>
+                      <span class="gap-item-sub">Deep reasoning & synthesis</span>
+                    </div>
+                    <span class="gap-item-check">✓</span>
+                  </div>
+                  <div class="gap-dropdown-item ${initialVal === "gemini" ? "is-active" : ""}" data-value="gemini" role="option" aria-selected="${initialVal === "gemini"}">
+                    <span class="gap-item-icon">✨</span>
+                    <div class="gap-item-info">
+                      <span class="gap-item-title">Google Gemini Flash</span>
+                      <span class="gap-item-sub">100% Free daily quota</span>
+                    </div>
+                    <span class="gap-item-check">✓</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-primary" id="runGapCheckBtn" type="button">Run Gap Check</button>
+            </span>
+          </div>
+        </div>`;
+
+      document.body.appendChild(modal);
+
+      // Custom dropdown toggle & selection logic
+      const dropdownWrap = modal.querySelector("#gcDropdownWrap");
+      const dropdownBtn = modal.querySelector("#gcDropdownBtn");
+      const dropdownInput = modal.querySelector("#gcModalProvider");
+      const dropdownText = modal.querySelector(".gap-dropdown-text");
+      const dropdownIcon = modal.querySelector(".gap-dropdown-icon");
+
+      dropdownBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = dropdownWrap.classList.toggle("is-open");
+        dropdownBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      });
+
+      modal.querySelectorAll(".gap-dropdown-item").forEach((item) => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const val = item.getAttribute("data-value") || "";
+          const icon = item.querySelector(".gap-item-icon")?.textContent || "⚡";
+          const title = item.querySelector(".gap-item-title")?.textContent || "Current model";
+
+          if (dropdownInput) dropdownInput.value = val;
+          if (dropdownText) dropdownText.textContent = title;
+          if (dropdownIcon) dropdownIcon.textContent = icon;
+
+          modal.querySelectorAll(".gap-dropdown-item").forEach((it) => {
+            it.classList.remove("is-active");
+            it.setAttribute("aria-selected", "false");
+          });
+          item.classList.add("is-active");
+          item.setAttribute("aria-selected", "true");
+
+          dropdownWrap.classList.remove("is-open");
+          dropdownBtn?.setAttribute("aria-expanded", "false");
+        });
+      });
+
+      modal.addEventListener("click", (e) => {
+        if (dropdownWrap && !dropdownWrap.contains(e.target)) {
+          dropdownWrap.classList.remove("is-open");
+          dropdownBtn?.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      // Update count as checkboxes change
+      const updateCount = () => {
+        const checked = modal.querySelectorAll(".gap-paper-cb:checked").length;
+        const countEl = modal.querySelector("#gapPaperCount");
+        if (countEl) countEl.textContent = `${checked} papers selected`;
+        const runBtn = modal.querySelector("#runGapCheckBtn");
+        if (runBtn) runBtn.disabled = checked === 0;
+      };
+      modal.querySelectorAll(".gap-paper-cb").forEach((cb) => cb.addEventListener("change", updateCount));
+      modal.querySelector("#selectAllGapPapers")?.addEventListener("click", () => {
+        modal.querySelectorAll(".gap-paper-cb").forEach((cb) => { cb.checked = true; });
+        updateCount();
+      });
+      modal.querySelector("#deselectAllGapPapers")?.addEventListener("click", () => {
+        modal.querySelectorAll(".gap-paper-cb").forEach((cb) => { cb.checked = false; });
+        updateCount();
+      });
+      modal.querySelector("#closeGapModal")?.addEventListener("click", () => modal.remove());
+      modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector("#runGapCheckBtn")?.addEventListener("click", async () => {
+        const selectedRanks = [...modal.querySelectorAll(".gap-paper-cb:checked")].map((cb) => parseInt(cb.value, 10));
+        if (!selectedRanks.length) return;
+        const providerSel = modal.querySelector("#gcModalProvider");
+        const chosenProvider = providerSel ? providerSel.value : "";
+        modal.remove();
+        await startGapCheck(taskId, selectedRanks, papers, gaps, chosenProvider);
+      });
+    }
+
+    async function startGapCheck(taskId, paperRanks, papers, gaps, provider) {
+      renderGapCheckArea(taskId, papers, gaps, { status: "running", progress: "Starting gap check agent\u2026", logs: [] });
+      try {
+        await fetch(`/chats/${encodeURIComponent(taskId)}/gap_check`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paper_ranks: paperRanks, provider: provider || "" }),
+        });
+        pollGapCheck(taskId, papers, gaps);
+      } catch (err) {
+        const area = document.getElementById("gapCheckArea");
+        if (area) area.innerHTML = `<div class="banner error">Failed to start gap check: ${escapeHtml(err.message || "Unknown error")}</div>`;
+      }
+    }
+
+    let gapCheckPollTimer = null;
+    function pollGapCheck(taskId, papers, gaps) {
+      if (gapCheckPollTimer) clearTimeout(gapCheckPollTimer);
+      gapCheckPollTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`/chats/${encodeURIComponent(taskId)}/gap_check`);
+          if (!res.ok) return;
+          const gc = await res.json();
+          renderGapCheckArea(taskId, papers, gaps, gc);
+        } catch (_e) {
+          pollGapCheck(taskId, papers, gaps);
+        }
+      }, 1200);
+    }
+
+
+
+    async function poll(taskId, gen) {
+      const res = await fetch(`/task/${taskId}`);
+      if (!res.ok) throw new Error("Could not load task status.");
+      const task = await res.json();
+      // Guard: discard result if a newer poll has started (chat switched or stopped)
+      if (gen !== undefined && gen !== pollGeneration) return false;
+      // Guard: only render if this task is still the active one
+      if (activeId && task.id && task.id !== activeId) return false;
+      renderSteps(task.progress, task);
+      renderResults(task);
+      if (task.status === "error") {
+        showBanner("");
+        runEl.disabled = false;
+        loadChats();
+        return true;
+      }
+      if (task.status === "done") {
+        showBanner("");
+        runEl.disabled = false;
+        loadChats();
+        checkSourceLimits();
+        return true;
+      }
+      return false;
+    }
+
+    let pollGeneration = 0;
+
+    function stopPoll() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+      pollGeneration++;
+    }
+
+    function startPoll(taskId) {
+      stopPoll();
+      const gen = pollGeneration;
+      const tick = async () => {
+        if (gen !== pollGeneration) return; // stale tick — a newer poll started
+        try {
+          const done = await poll(taskId, gen);
+          if (done) stopPoll();
+        } catch (err) {
+          if (gen !== pollGeneration) return; // discard error from stale tick
+          showBanner(err.message);
+          runEl.disabled = false;
+          stopPoll();
+        }
+      };
+      tick();
+      pollTimer = setInterval(tick, 2000);
+    }
+
+    async function openChat(id, keepBanner = false) {
+      if (!id) return;
+      stopPoll();
+      if (!keepBanner) showBanner("");
+      try {
+        const res = await fetch(`/task/${id}?_t=${Date.now()}`);
+        if (!res.ok) throw new Error("Could not load that chat.");
+        const task = await res.json();
+        setActiveChat(task.id, task.idea);
+        ideaEl.value = "";
+        renderSteps(task.progress, task);
+        renderResults(task);
+        if (task.datasets_only !== undefined && datasetsOnlyEl) {
+          datasetsOnlyEl.checked = Boolean(task.datasets_only);
+          datasetsOnlyRow?.classList.toggle("is-active", datasetsOnlyEl.checked);
+        }
+        if (task.status === "running") {
+          runEl.disabled = true;
+          startPoll(task.id);
+        } else {
+          runEl.disabled = false;
+        }
+        loadChats();
+      } catch (err) {
+        showBanner(err.message);
+      }
+    }
+
+    function newChat() {
+      stopPoll();
+      setActiveChat(null);
+      ideaEl.value = "";
+      topicTaskEl.value = "";
+      topicDomainEl.value = "";
+      topicConstraintEl.value = "";
+      if (datasetsOnlyEl) {
+        datasetsOnlyEl.checked = false;
+        datasetsOnlyRow?.classList.remove("is-active");
+      }
+      updateTopicWarn();
+      ideaEl.focus();
+      runEl.disabled = false;
+      showBanner("");
+      renderSteps();
+      renderSources();
+      resultsEl.innerHTML = `<p class="empty">Type an idea above. This chat will be saved automatically.</p>`;
+      loadChats();
+    }
+
+    async function checkSourceLimits() {
+      try {
+        const res = await fetch("/api/limits");
+        if (!res.ok) return;
+        const data = await res.json();
+        const exhausted = (data.limits || []).filter((item) => item.status === "exhausted");
+        if (!exhausted.length) return;
+        const names = exhausted.map((item) => item.name).join(", ");
+        showBanner(`${names} limit reached. Open Settings to see reset times or add a free API key.`);
+      } catch (_err) {
+        /* ignore */
+      }
+    }
+
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/settings");
+        if (!res.ok) return;
+        const data = await res.json();
+        keyConfigured = Boolean(data.configured);
+        openaiConfigured = Boolean(data.openai_configured);
+        geminiConfigured = Boolean(data.gemini_configured);
+        preferredProvider = data.preferred_provider || (openaiConfigured ? "openai" : (geminiConfigured ? "gemini" : "openai"));
+
+        if (openaiKeyStatus) {
+          if (openaiConfigured) {
+            openaiKeyStatus.innerHTML = '<span class="status-dot dot-ok"></span> Key ready';
+          } else {
+            openaiKeyStatus.innerHTML = '<span class="status-dot dot-warn"></span> No key added';
+          }
+        }
+        if (geminiKeyStatus) {
+          if (geminiConfigured) {
+            geminiKeyStatus.innerHTML = '<span class="status-dot dot-ok"></span> Key ready';
+          } else {
+            geminiKeyStatus.innerHTML = '<span class="status-dot dot-warn"></span> No key added';
+          }
+        }
+
+        updateModelCardsUI(preferredProvider);
+        fillTutorProvider();
+        if (data.spend) {
+          renderSpend({ this_run: { usd_display: "$0.0000" }, total: data.spend });
+        }
+      } catch (_err) {
+        /* ignore */
+      }
+    }
+
+    newChatEl.addEventListener("click", newChat);
+
+    function closeProviderModal() {
+      const modal = document.getElementById("providerModal");
+      if (modal) {
+        modal.hidden = true;
+        modal.setAttribute("aria-hidden", "true");
+      }
+      document.body.classList.remove("modal-open");
+    }
+
+    function pickProvider() {
+      const selected = document.querySelector('input[name="aiProvider"]:checked')?.value;
+      if (selected) return Promise.resolve(selected);
+      if (preferredProvider) return Promise.resolve(preferredProvider);
+      if (openaiConfigured) return Promise.resolve("openai");
+      if (geminiConfigured) return Promise.resolve("gemini");
+      return Promise.resolve("openai");
+    }
+
+    document.getElementById("retryRun").addEventListener("click", async () => {
+      if (!activeId) return;
+      const btn = document.getElementById("retryRun");
+      btn.disabled = true;
+      showBanner("");
+      try {
+        const res = await fetch(`/task/${encodeURIComponent(activeId)}/retry`, { method: "POST" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(errorMessage(data) || "Could not retry.");
+        renderSteps(data.progress, data);
+        renderResults(data);
+        runEl.disabled = true;
+        startPoll(data.id || activeId);
+      } catch (err) {
+        btn.disabled = false;
+        showBanner(err.message || "Could not retry.");
+      }
+    });
+
+    runEl.addEventListener("click", async () => {
+      const topic = composeTopic();
+      const prompt = topic.prompt;
+      const chosenProvider = document.querySelector('input[name="aiProvider"]:checked')?.value || preferredProvider || "openai";
+
+      if (chosenProvider === "openai" && !openaiConfigured) {
+        showBanner("OpenAI API key missing. Click 'Settings →' above to add your OpenAI key, or select Google Gemini (100% Free).");
+        return;
+      }
+      if (chosenProvider === "gemini" && !geminiConfigured) {
+        showBanner("Gemini API key missing. Click 'Settings →' above to add your free Google AI Studio key, or select OpenAI.");
+        return;
+      }
+      if (!keyConfigured) {
+        showBanner("Add an OpenAI or Gemini API key in Settings first.");
+        return;
+      }
+      if (prompt.length < 8) {
+        showBanner("Describe the project idea, or fill task, domain, and constraint.");
+        updateTopicWarn();
+        return;
+      }
+      updateTopicWarn();
+      showBanner("");
+      const provider = chosenProvider;
+      runEl.disabled = true;
+      renderSteps(DEFAULT_STEPS.map((s) => ({ ...s, status: "pending", detail: "" })));
+      renderSources();
+      runSpendEl.textContent = "$0.0000";
+      resultsEl.innerHTML = `<p class="empty">Starting agents…</p>`;
+      setActiveChat(null, prompt);
+      stopPoll();
+      try {
+        fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ preferred_provider: provider }),
+        }).catch(() => {});
+        const res = await fetch("/research", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: topic.idea || topic.prompt,
+            paper_count: parseInt(paperCountEl.value, 10) || 8,
+            task: topic.idea ? topic.task : "",
+            domain: topic.idea ? topic.domain : "",
+            constraint: topic.idea ? topic.constraint : "",
+            datasets_only: document.getElementById("datasetsOnly")?.checked || false,
+            provider,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: "Request failed" }));
+          throw new Error(errorMessage(err));
+        }
+        const task = await res.json();
+        setActiveChat(task.id, task.idea || prompt);
+        ideaEl.value = "";
+        topicTaskEl.value = "";
+        topicDomainEl.value = "";
+        topicConstraintEl.value = "";
+        updateTopicWarn();
+        renderSteps(task.progress, task);
+        await loadChats();
+        startPoll(task.id);
+      } catch (err) {
+        showBanner(err.message);
+        runEl.disabled = false;
+      }
+    });
+
+    async function boot() {
+      try { renderSteps(); } catch (e) { console.error("renderSteps error:", e); }
+      try { updateTopicWarn(); } catch (e) { console.error("updateTopicWarn error:", e); }
+      try { await loadChats(); } catch (e) { console.error("loadChats error:", e); }
+      try { await loadSources(); } catch (e) { console.error("loadSources error:", e); }
+      try { await loadSettings(); } catch (e) { console.error("loadSettings error:", e); }
+      try { await loadStars(); } catch (e) { console.error("loadStars error:", e); }
+      try { await loadNotes(); } catch (e) { console.error("loadNotes error:", e); }
+      try { await loadLibrary(); } catch (e) { console.error("loadLibrary error:", e); }
+      const fromHash = (location.hash.match(/^#chat\/(.+)$/) || [])[1];
+      const saved = fromHash || localStorage.getItem("literature-lab-chat");
+      if (saved) {
+        try { await openChat(saved); } catch (e) { console.error("openChat error:", e); }
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

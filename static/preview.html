@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Datasets section preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body style="grid-template-columns: 1fr">
+  <main class="main">
+    <header class="masthead">
+      <div class="mark">Datasets <span>preview</span></div>
+      <p>Sample data only, so you can judge the layout. Delete <code>static/preview.html</code> anytime.</p>
+    </header>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Datasets</h2>
+        <span class="hint">4 found in these papers</span>
+      </div>
+
+      <div class="dataset-grid">
+        <article class="dataset">
+          <div class="ds-top">
+            <span class="ds-icon" title="text">Aa</span>
+            <div class="ds-head">
+              <h4>Natural Questions</h4>
+              <p class="ds-chips">
+                <span class="chip kind">text</span>
+                <span class="chip">307k questions</span>
+                <span class="chip access ok">public</span>
+              </p>
+            </div>
+          </div>
+          <div class="ds-flow">
+            <div class="flow-col">
+              <a class="flow-node paper" href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noreferrer" title="Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks">#1 Retrieval-Augmented Generation for...</a>
+              <a class="flow-node paper" href="https://arxiv.org/abs/2310.11511" target="_blank" rel="noreferrer" title="Self-RAG: Learning to Retrieve, Generate and Critique">#3 Self-RAG: Learning to Retrieve, Gen...</a>
+            </div>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node data">Natural Questions</span>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node idea">your idea</span>
+          </div>
+          <p class="ds-about">Real Google queries paired with Wikipedia pages and human annotated short and long answers.</p>
+          <p class="ds-why"><strong>Why this helps</strong> Standard benchmark to measure whether your retrieval step actually improves answer accuracy over a plain LLM.</p>
+          <p class="ds-links">
+            <a href="https://ai.google.com/research/NaturalQuestions" target="_blank" rel="noreferrer">Homepage</a><i>&middot;</i>
+            <a href="https://huggingface.co/datasets?search=Natural%20Questions" target="_blank" rel="noreferrer">Hugging Face</a><i>&middot;</i>
+            <a href="https://www.google.com/search?q=Natural+Questions+dataset" target="_blank" rel="noreferrer">Web search</a>
+          </p>
+        </article>
+
+        <article class="dataset">
+          <div class="ds-top">
+            <span class="ds-icon" title="benchmark">&#9733;</span>
+            <div class="ds-head">
+              <h4>HotpotQA</h4>
+              <p class="ds-chips">
+                <span class="chip kind">benchmark</span>
+                <span class="chip">113k pairs</span>
+                <span class="chip access ok">public</span>
+              </p>
+            </div>
+          </div>
+          <div class="ds-flow">
+            <div class="flow-col">
+              <a class="flow-node paper" href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noreferrer" title="From Local to Global: A Graph RAG Approach">#2 From Local to Global: A Graph RAG...</a>
+            </div>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node data">HotpotQA</span>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node idea">your idea</span>
+          </div>
+          <p class="ds-about">Questions that need reasoning across two Wikipedia articles, with sentence level supporting facts.</p>
+          <p class="ds-why"><strong>Why this helps</strong> Tests multi-hop retrieval, the case where single-shot search fails and your agent design matters most.</p>
+          <p class="ds-links">
+            <a href="https://hotpotqa.github.io/" target="_blank" rel="noreferrer">Homepage</a><i>&middot;</i>
+            <a href="https://huggingface.co/datasets?search=HotpotQA" target="_blank" rel="noreferrer">Hugging Face</a><i>&middot;</i>
+            <a href="https://www.google.com/search?q=HotpotQA+dataset" target="_blank" rel="noreferrer">Web search</a>
+          </p>
+        </article>
+
+        <article class="dataset">
+          <div class="ds-top">
+            <span class="ds-icon" title="tabular">&#9638;</span>
+            <div class="ds-head">
+              <h4>MS MARCO</h4>
+              <p class="ds-chips">
+                <span class="chip kind">tabular</span>
+                <span class="chip">8.8M passages</span>
+                <span class="chip access ok">public</span>
+              </p>
+            </div>
+          </div>
+          <div class="ds-flow">
+            <div class="flow-col">
+              <a class="flow-node paper" href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noreferrer" title="Retrieval-Augmented Generation for Large Language Models: A Survey">#4 Retrieval-Augmented Generation for...</a>
+            </div>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node data">MS MARCO</span>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node idea">your idea</span>
+          </div>
+          <p class="ds-about">Bing search passages with relevance labels, the usual training set for dense retrievers.</p>
+          <p class="ds-why"><strong>Why this helps</strong> Gives you a large ranked corpus to train or fine tune the retriever before touching your own documents.</p>
+          <p class="ds-links">
+            <a href="https://microsoft.github.io/msmarco/" target="_blank" rel="noreferrer">Homepage</a><i>&middot;</i>
+            <a href="https://huggingface.co/datasets?search=MS%20MARCO" target="_blank" rel="noreferrer">Hugging Face</a><i>&middot;</i>
+            <a href="https://www.google.com/search?q=MS+MARCO+dataset" target="_blank" rel="noreferrer">Web search</a>
+          </p>
+        </article>
+
+        <article class="dataset">
+          <div class="ds-top">
+            <span class="ds-icon" title="text">Aa</span>
+            <div class="ds-head">
+              <h4>MIMIC-IV clinical notes</h4>
+              <p class="ds-chips">
+                <span class="chip kind">text</span>
+                <span class="chip access">on request</span>
+              </p>
+            </div>
+          </div>
+          <div class="ds-flow">
+            <div class="flow-col">
+              <a class="flow-node paper" href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noreferrer" title="Retrieval augmented generation for large language models in healthcare">#6 Retrieval augmented generation for...</a>
+            </div>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node data">MIMIC-IV clinical notes</span>
+            <span class="flow-arrow" aria-hidden="true"></span>
+            <span class="flow-node idea">your idea</span>
+          </div>
+          <p class="ds-about">De-identified hospital records requiring a credentialed data use agreement before download.</p>
+          <p class="ds-why"><strong>Why this helps</strong> Shows how much accuracy drops on private domain text, the risk your project faces on real documents.</p>
+          <p class="ds-links">
+            <a href="https://huggingface.co/datasets?search=MIMIC-IV" target="_blank" rel="noreferrer">Hugging Face</a><i>&middot;</i>
+            <a href="https://www.google.com/search?q=MIMIC-IV+dataset" target="_blank" rel="noreferrer">Web search</a>
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

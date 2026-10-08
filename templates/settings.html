@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settings - Literature Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css?v=settings-v2" />
+</head>
+<body class="settings-body">
+  <aside class="rail settings-rail" id="appRail">
+    <div class="rail-header">
+      <div class="rail-brand">Literature <span>Lab</span></div>
+      <button class="rail-close-btn" id="closeRail" type="button" aria-label="Close menu">&times;</button>
+    </div>
+    <a class="rail-link" href="/">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to research
+    </a>
+    <p class="rail-label">Settings</p>
+    <nav class="settings-nav" aria-label="Settings sections">
+      <a href="#keys" class="settings-nav-item active" data-section="keys">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        API keys
+      </a>
+      <a href="#limits" class="settings-nav-item" data-section="limits">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+        Source limits
+      </a>
+      <a href="#spend" class="settings-nav-item" data-section="spend">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        AI spend
+      </a>
+    </nav>
+    <div class="settings-rail-foot">
+      <p>All keys stay on your machine in <code>data/settings.json</code>.</p>
+    </div>
+  </aside>
+  <div class="rail-backdrop" id="railBackdrop"></div>
+
+  <main class="main settings-page">
+    <header class="settings-hero">
+      <div class="masthead-main">
+        <button class="mobile-menu-btn" id="openRail" type="button" aria-label="Open settings menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <span>Settings Menu</span>
+        </button>
+        <div>
+          <p class="settings-eyebrow">Configuration</p>
+          <h1 class="settings-title">Settings</h1>
+        </div>
+      </div>
+      <p class="settings-lead">Add OpenAI for best quality, or Gemini Flash for a free daily quota. Paper search stays free.</p>
+    </header>
+
+    <p id="banner" class="banner settings-banner"></p>
+
+    <section class="settings-panel" id="keys">
+      <div class="panel-intro">
+        <h2>API keys</h2>
+        <p class="panel-note">Recommended: OpenAI gpt-4o. If you want free runs, add a Gemini key. The app uses Flash because Pro has no free quota on new keys.</p>
+      </div>
+
+      <p id="recommendNote" class="settings-recommend">OpenAI gpt-4o is recommended for quality. Gemini Flash is the free option.</p>
+
+      <div class="key-cards">
+        <article class="key-card key-card--openai">
+          <div class="key-card-top">
+            <div class="service-badge service-badge--openai" aria-hidden="true">AI</div>
+            <div class="key-card-meta">
+              <div class="key-card-head">
+                <h3>OpenAI gpt-4o</h3>
+                <span class="status-pill rec">recommended</span>
+                <span id="openaiBadge" class="status-pill">not set</span>
+              </div>
+              <p class="key-card-desc">Best quality for ranking, PDF reading, gaps, and the report. Paid per run.</p>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="apiKey">API key</label>
+            <div class="input-shell">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input id="apiKey" class="field-input" type="password" autocomplete="off" placeholder="Paste your OpenAI API key" spellcheck="false" />
+              <button class="input-toggle" type="button" data-target="apiKey" aria-label="Show API key">
+                <svg class="icon-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <p id="keyStatus" class="field-status">No OpenAI key saved yet.</p>
+          </div>
+          <div class="key-card-foot">
+            <button id="saveOpenai" class="btn-save btn-save--primary" type="button">Save OpenAI key</button>
+          </div>
+        </article>
+
+        <article class="key-card key-card--gemini">
+          <div class="key-card-top">
+            <div class="service-badge service-badge--gemini" aria-hidden="true">G</div>
+            <div class="key-card-meta">
+              <div class="key-card-head">
+                <h3>Gemini Flash</h3>
+                <span class="status-pill">free quota</span>
+                <span id="geminiBadge" class="status-pill">not set</span>
+              </div>
+              <p class="key-card-desc">
+                Free daily quota from Google AI Studio. Gemini Pro is not free on new keys (quota is 0). Flash is the free model.
+                <a class="field-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Get a free key &rarr;</a>
+              </p>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Guide for Free Gemini Key -->
+          <div class="gemini-steps-guide">
+            <div class="guide-steps-header">
+              <span class="guide-steps-badge">✦ Free Tier Guide</span>
+              <h4>How to get your free Gemini API key:</h4>
+            </div>
+            <ol class="guide-steps-list">
+              <li class="guide-step-item">
+                <span class="guide-step-num">1</span>
+                <div class="guide-step-content">
+                  <p><strong>Open Google AI Studio:</strong> Open <a class="field-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a> and sign in with your Google account.</p>
+                </div>
+              </li>
+              <li class="guide-step-item">
+                <span class="guide-step-num">2</span>
+                <div class="guide-step-content">
+                  <p><strong>Create Key:</strong> Click the blue <b>"Create API Key"</b> button.</p>
+                </div>
+              </li>
+              <li class="guide-step-item">
+                <span class="guide-step-num">3</span>
+                <div class="guide-step-content">
+                  <p><strong>Select Project:</strong> Choose <i>"Create key in new project"</i> (or select any existing Google Cloud project).</p>
+                </div>
+              </li>
+              <li class="guide-step-item">
+                <span class="guide-step-num">4</span>
+                <div class="guide-step-content">
+                  <p><strong>Copy &amp; Paste:</strong> Copy your key (starts with <code>AIzaSy...</code>), paste it in the field below, and click <b>"Save Gemini key"</b>.</p>
+                </div>
+              </li>
+            </ol>
+            <div class="guide-steps-note">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span><strong>Free Quota:</strong> Google AI Studio provides up to <strong>1,500 free requests per day</strong> on <strong>Gemini Flash</strong>. No credit card or billing is required.</span>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="geminiKey">API key</label>
+            <div class="input-shell">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input id="geminiKey" class="field-input" type="password" autocomplete="off" placeholder="Paste your Gemini API key" spellcheck="false" />
+              <button class="input-toggle" type="button" data-target="geminiKey" aria-label="Show API key">
+                <svg class="icon-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <p id="geminiStatus" class="field-status">No Gemini key saved yet.</p>
+          </div>
+          <div class="key-card-foot">
+            <button id="saveGemini" class="btn-save" type="button">Save Gemini key</button>
+          </div>
+        </article>
+
+        <article class="key-card key-card--quota">
+          <div class="key-card-top">
+            <div class="service-badge service-badge--quota" aria-hidden="true">#</div>
+            <div class="key-card-meta">
+              <div class="key-card-head">
+                <h3>Gemini Flash daily limit</h3>
+              </div>
+              <p class="key-card-desc">Each research run uses 8 shared calls plus 1 call per paper. Gemini Pro has no free quota on new keys, so the app uses Flash.</p>
+            </div>
+          </div>
+          <div class="quota-stats" id="quotaStats">
+            <div><span>Requests / day</span><strong>250-1,500</strong></div>
+            <div><span>Requests / minute</span><strong>10-15</strong></div>
+            <div><span>Tokens / minute</span><strong>250,000-1,000,000</strong></div>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="quotaPapers">Papers in one run</label>
+            <select id="quotaPapers" class="field-input">
+              <option value="3">3 papers</option>
+              <option value="5">5 papers</option>
+              <option value="8" selected>8 papers (recommended)</option>
+              <option value="10">10 papers</option>
+              <option value="12">12 papers</option>
+              <option value="15">15 papers</option>
+              <option value="30">30 papers</option>
+            </select>
+          </div>
+          <p id="quotaResult" class="quota-result">8 papers = 16 model calls. About 3 runs/day at 50 requests, 6 at 100.</p>
+          <div class="quota-table-wrap">
+            <table class="quota-table">
+              <thead>
+                <tr>
+                  <th>Papers</th>
+                  <th>Calls / run</th>
+                  <th>Runs / day (250)</th>
+                  <th>Runs / day (1,500)</th>
+                </tr>
+              </thead>
+              <tbody id="quotaRows"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="key-card key-card--s2">
+          <div class="key-card-top">
+            <div class="service-badge service-badge--s2" aria-hidden="true">S2</div>
+            <div class="key-card-meta">
+              <div class="key-card-head">
+                <h3>Semantic Scholar</h3>
+                <span id="s2Badge" class="status-pill">optional</span>
+              </div>
+              <p class="key-card-desc">
+                Optional free key for higher search limits.
+                <a class="field-link" href="https://www.semanticscholar.org/product/api#api-key-form" target="_blank" rel="noreferrer">Request key</a>
+              </p>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="s2Key">API key</label>
+            <div class="input-shell">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input id="s2Key" class="field-input" type="password" autocomplete="off" placeholder="Leave empty for shared pool" spellcheck="false" />
+              <button class="input-toggle" type="button" data-target="s2Key" aria-label="Show API key">
+                <svg class="icon-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <p id="s2Status" class="field-status">Not set. Shared pool may throttle during peak use.</p>
+          </div>
+          <div class="key-card-foot">
+            <button id="saveS2" class="btn-save" type="button">Save S2 key</button>
+          </div>
+        </article>
+
+        <article class="key-card key-card--openalex">
+          <div class="key-card-top">
+            <div class="service-badge service-badge--openalex" aria-hidden="true">OA</div>
+            <div class="key-card-meta">
+              <div class="key-card-head">
+                <h3>OpenAlex contact email</h3>
+                <span id="contactBadge" class="status-pill">optional</span>
+              </div>
+              <p class="key-card-desc">No account needed. A mailto address puts you in OpenAlex's polite rate-limit pool.</p>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="contactEmail">Email address</label>
+            <div class="input-shell">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </span>
+              <input id="contactEmail" class="field-input" type="email" autocomplete="email" placeholder="you@example.com" />
+            </div>
+            <p id="contactStatus" class="field-status">Not set.</p>
+          </div>
+          <div class="key-card-foot">
+            <button id="saveContact" class="btn-save" type="button">Save email</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="settings-panel" id="limits">
+      <div class="panel-head">
+        <div class="panel-intro">
+          <h2>Source limits</h2>
+          <p class="panel-note">Live usage from API headers and local tracking. Updates after every search.</p>
+        </div>
+        <button id="refreshLimits" class="btn-refresh" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div id="limitsList" class="limits-list">
+        <div class="limits-skeleton">
+          <div class="skeleton-bar"></div>
+          <div class="skeleton-bar short"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-panel" id="spend">
+      <div class="panel-intro">
+        <h2>AI spend</h2>
+        <p class="panel-note">Tracked per run and lifetime from list pricing.</p>
+      </div>
+      <div class="spend-grid">
+        <div class="spend-tile spend-tile--run">
+          <div class="spend-tile-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <span class="spend-label">This run</span>
+            <strong id="runSpend">$0.0000</strong>
+          </div>
+        </div>
+        <div class="spend-tile spend-tile--total">
+          <div class="spend-tile-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div>
+            <span class="spend-label">Total spent</span>
+            <strong id="totalSpend">$0.0000</strong>
+          </div>
+        </div>
+      </div>
+      <p class="panel-foot">OpenAI spend is stored in <code>data/spend.json</code>. Gemini Flash free quota is $0.</p>
+    </section>
+  </main>
+
+  <script src="/static/nav.js"></script>
+  <script>
+    const bannerEl = document.getElementById("banner");
+    const limitsListEl = document.getElementById("limitsList");
+    const navItems = [...document.querySelectorAll(".settings-nav-item")];
+    const sections = [...document.querySelectorAll(".settings-panel")];
+
+    function showBanner(text) {
+      bannerEl.textContent = text || "";
+      bannerEl.classList.toggle("show", Boolean(text));
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function setPill(el, ok, label) {
+      el.textContent = label;
+      el.classList.toggle("ok", ok);
+      el.classList.toggle("warn", !ok && label !== "optional");
+    }
+
+    function setSaving(btn, saving) {
+      btn.disabled = saving;
+      btn.classList.toggle("is-saving", saving);
+      if (saving) btn.dataset.label = btn.textContent;
+      btn.textContent = saving ? "Saving..." : (btn.dataset.label || btn.textContent);
+    }
+
+    document.querySelectorAll(".input-toggle").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = document.getElementById(btn.dataset.target);
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.querySelector(".icon-show").hidden = show;
+        btn.querySelector(".icon-hide").hidden = !show;
+        btn.setAttribute("aria-label", show ? "Hide API key" : "Show API key");
+      });
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.id;
+          navItems.forEach((item) => item.classList.toggle("active", item.dataset.section === id));
+        });
+      },
+      { rootMargin: "-30% 0px -55% 0px", threshold: 0 }
+    );
+    sections.forEach((section) => observer.observe(section));
+
+    async function loadSettings() {
+      const res = await fetch("/api/settings");
+      if (!res.ok) return;
+      const data = await res.json();
+      const keyStatus = document.getElementById("keyStatus");
+      const geminiStatus = document.getElementById("geminiStatus");
+      const s2Status = document.getElementById("s2Status");
+      const contactStatus = document.getElementById("contactStatus");
+      const rec = document.getElementById("recommendNote");
+      if (data.recommend_label) rec.textContent = data.recommend_label;
+
+      if (data.openai_configured) {
+        keyStatus.textContent = `Connected: ${data.masked_key}`;
+        keyStatus.classList.add("ok");
+        document.getElementById("apiKey").placeholder = "Paste a new key to replace";
+        setPill(document.getElementById("openaiBadge"), true, "connected");
+      } else {
+        setPill(document.getElementById("openaiBadge"), false, data.gemini_configured ? "optional" : "required");
+      }
+
+      if (data.gemini_configured) {
+        geminiStatus.textContent = `Connected: ${data.gemini_masked_key}`;
+        geminiStatus.classList.add("ok");
+        document.getElementById("geminiKey").placeholder = "Paste a new key to replace";
+        setPill(document.getElementById("geminiBadge"), true, "connected");
+      } else {
+        setPill(document.getElementById("geminiBadge"), false, "not set");
+      }
+
+      renderQuota(data.gemini_quota);
+
+      if (data.s2_configured) {
+        s2Status.textContent = `Connected: ${data.s2_masked_key}`;
+        s2Status.classList.add("ok");
+        setPill(document.getElementById("s2Badge"), true, "connected");
+      }
+
+      if (data.contact_configured) {
+        contactStatus.textContent = `Active: ${data.contact_email}`;
+        contactStatus.classList.add("ok");
+        setPill(document.getElementById("contactBadge"), true, "set");
+      }
+
+      if (data.spend) {
+        document.getElementById("runSpend").textContent = "$0.0000";
+        document.getElementById("totalSpend").textContent = data.spend.usd_display || "$0.0000";
+      }
+    }
+
+    let quotaData = null;
+
+    function estimateFor(papers) {
+      const n = Math.max(3, Math.min(30, Number(papers) || 8));
+      const calls = 8 + n;
+      return {
+        paper_count: n,
+        calls_per_run: calls,
+        runs_per_day_low: Math.floor(250 / calls),
+        runs_per_day_high: Math.floor(1500 / calls),
+      };
+    }
+
+    function renderQuotaResult(est) {
+      const el = document.getElementById("quotaResult");
+      el.textContent = `${est.paper_count} papers = ${est.calls_per_run} model calls. About ${est.runs_per_day_low} run${est.runs_per_day_low === 1 ? "" : "s"}/day at 250 requests, ${est.runs_per_day_high} at 1,500.`;
+    }
+
+    function renderQuota(quota) {
+      quotaData = quota || {};
+      const stats = document.getElementById("quotaStats");
+      stats.innerHTML = `
+        <div><span>Requests / day</span><strong>${escapeHtml(quotaData.rpd || "250-1,500")}</strong></div>
+        <div><span>Requests / minute</span><strong>${escapeHtml(quotaData.rpm || "10-15")}</strong></div>
+        <div><span>Tokens / minute</span><strong>${escapeHtml(quotaData.tpm || "250,000-1,000,000")}</strong></div>`;
+      const rows = quotaData.rows || [3, 5, 8, 10, 12, 15, 30].map(estimateFor);
+      document.getElementById("quotaRows").innerHTML = rows.map((row) => `
+        <tr>
+          <td>${escapeHtml(row.paper_count)}</td>
+          <td>${escapeHtml(row.calls_per_run)}</td>
+          <td>${escapeHtml(row.runs_per_day_low)}</td>
+          <td>${escapeHtml(row.runs_per_day_high)}</td>
+        </tr>`).join("");
+      const papers = document.getElementById("quotaPapers").value;
+      const match = rows.find((row) => String(row.paper_count) === String(papers)) || estimateFor(papers);
+      renderQuotaResult(match);
+    }
+
+    document.getElementById("quotaPapers").addEventListener("change", () => {
+      const n = document.getElementById("quotaPapers").value;
+      const rows = (quotaData && quotaData.rows) || [];
+      const match = rows.find((row) => String(row.paper_count) === String(n)) || estimateFor(n);
+      renderQuotaResult(match);
+    });
+
+    function renderLimits(limits) {
+      if (!limits.length) {
+        limitsListEl.innerHTML = `<p class="empty-limits">No limit data yet. Run a research query to populate usage.</p>`;
+        return;
+      }
+      limitsListEl.innerHTML = limits.map((item) => {
+        const pct = Math.min(100, Math.max(0, item.percent_used || 0));
+        const barClass = item.status === "exhausted" ? "exhausted" : item.status === "warning" ? "warning" : "";
+        const right = item.remaining != null && item.limit != null
+          ? `${pct}% used`
+          : (item.status === "exhausted" ? "limit hit" : "tracking");
+        return `
+        <article class="limit-card ${barClass}">
+          <div class="limit-top">
+            <div>
+              <h3>${escapeHtml(item.name)} <span class="limit-site">${escapeHtml(item.site)}</span></h3>
+              <p class="limit-period">${escapeHtml(item.period)} &middot; ${escapeHtml(item.reset_label || "")}</p>
+            </div>
+            <span class="limit-pct">${escapeHtml(right)}</span>
+          </div>
+          <div class="limit-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+            <span style="width:${pct}%"></span>
+          </div>
+          <p class="limit-detail">${escapeHtml(item.detail)}</p>
+          <p class="limit-hint">${escapeHtml(item.hint)}</p>
+          ${item.updated_label ? `<p class="limit-updated">Last check ${escapeHtml(item.updated_label)}</p>` : ""}
+          ${item.status === "exhausted" ? `<p class="limit-warn">Limit reached. Wait for reset or add a free API key where available.</p>` : ""}
+        </article>`;
+      }).join("");
+    }
+
+    async function loadLimits(refresh = false) {
+      const refreshBtn = document.getElementById("refreshLimits");
+      if (refresh) refreshBtn.classList.add("is-spinning");
+      try {
+        const res = await fetch(`/api/limits${refresh ? "?refresh=true" : ""}`);
+        if (!res.ok) throw new Error("Could not load limits.");
+        const data = await res.json();
+        renderLimits(data.limits || []);
+      } catch (err) {
+        limitsListEl.innerHTML = `<p class="empty-limits">${escapeHtml(err.message)}</p>`;
+      } finally {
+        refreshBtn.classList.remove("is-spinning");
+      }
+    }
+
+    async function saveSettings(payload) {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Could not save.");
+      return data;
+    }
+
+    document.getElementById("saveOpenai").addEventListener("click", async () => {
+      const btn = document.getElementById("saveOpenai");
+      const key = document.getElementById("apiKey").value.trim();
+      if (!key) { showBanner("Paste your OpenAI API key first."); return; }
+      setSaving(btn, true);
+      try {
+        await saveSettings({ openai_api_key: key, openai_model: "openai:gpt-4o" });
+        document.getElementById("apiKey").value = "";
+        showBanner("");
+        loadSettings();
+      } catch (err) { showBanner(err.message); }
+      finally { setSaving(btn, false); }
+    });
+
+    document.getElementById("saveGemini").addEventListener("click", async () => {
+      const btn = document.getElementById("saveGemini");
+      const key = document.getElementById("geminiKey").value.trim();
+      if (!key) { showBanner("Paste your Gemini API key first."); return; }
+      setSaving(btn, true);
+      try {
+        await saveSettings({ gemini_api_key: key });
+        document.getElementById("geminiKey").value = "";
+        showBanner("");
+        loadSettings();
+      } catch (err) { showBanner(err.message); }
+      finally { setSaving(btn, false); }
+    });
+
+    document.getElementById("saveS2").addEventListener("click", async () => {
+      const btn = document.getElementById("saveS2");
+      setSaving(btn, true);
+      try {
+        await saveSettings({ semantic_scholar_api_key: document.getElementById("s2Key").value.trim() });
+        document.getElementById("s2Key").value = "";
+        showBanner("");
+        loadSettings();
+      } catch (err) { showBanner(err.message); }
+      finally { setSaving(btn, false); }
+    });
+
+    document.getElementById("saveContact").addEventListener("click", async () => {
+      const btn = document.getElementById("saveContact");
+      setSaving(btn, true);
+      try {
+        await saveSettings({ contact_email: document.getElementById("contactEmail").value.trim() });
+        showBanner("");
+        loadSettings();
+        loadLimits(true);
+      } catch (err) { showBanner(err.message); }
+      finally { setSaving(btn, false); }
+    });
+
+    document.getElementById("refreshLimits").addEventListener("click", () => loadLimits(true));
+
+    loadSettings();
+    loadLimits(true);
+    setInterval(() => loadLimits(false), 30000);
+  </script>
+</body>
+</html>

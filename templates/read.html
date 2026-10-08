@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Read - Literature Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css?v=tutor-copilot-v8" />
+</head>
+<body class="settings-body read-body">
+  <aside class="rail settings-rail" id="appRail">
+    <div class="rail-header">
+      <div class="rail-brand">Literature <span>Lab</span></div>
+      <button class="rail-close-btn" id="closeRail" type="button" aria-label="Close menu">&times;</button>
+    </div>
+    <a class="rail-link" href="/">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to research
+    </a>
+    <p class="rail-label">Read</p>
+    <nav class="settings-nav" aria-label="Read sections">
+      <button type="button" class="settings-nav-item active" id="navAgent" data-hub-tab="agent">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+        AI Agent
+        <b class="hub-agent-count">0</b>
+      </button>
+      <button type="button" class="settings-nav-item" id="navYou" data-hub-tab="you">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        You
+        <b class="hub-you-count">0</b>
+      </button>
+    </nav>
+    <div class="settings-rail-foot">
+      <p>Follow the staged reading strategy: 1) Relevance Filter, 2) Technical Depth, 3) Survey Matrix &amp; Snowballing.</p>
+    </div>
+  </aside>
+  <div class="rail-backdrop" id="railBackdrop"></div>
+
+  <main class="main read-page" id="libraryView">
+    <header class="settings-hero">
+      <div class="masthead-main">
+        <button class="mobile-menu-btn" id="openRail" type="button" aria-label="Open reading menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <span>Reading Menu</span>
+        </button>
+        <div>
+          <p class="settings-eyebrow">Reading studio</p>
+          <h1 class="read-heading" id="readHeading">Papers</h1>
+        </div>
+      </div>
+      <p class="settings-lead" id="readLead">Every paper the agent gathered. The gold ring fills as you read, add marks, and ask the tutor.</p>
+    </header>
+    <div class="hub-tabs" role="tablist" aria-label="Paper source">
+      <button type="button" class="hub-tab on" id="tabHubAgent" data-hub-tab="agent">AI Agent <b class="hub-agent-count">0</b></button>
+      <button type="button" class="hub-tab" id="tabHubYou" data-hub-tab="you">You <b class="hub-you-count">0</b></button>
+    </div>
+    <p id="banner" class="banner settings-banner"></p>
+    <div id="hubAgentList" class="read-grid"></div>
+    <div id="hubYouList" class="read-grid" hidden></div>
+  </main>
+
+  <div id="readerPanel" class="reader-overlay read-studio" hidden>
+    <div class="reader-shell" role="dialog" aria-modal="true" aria-labelledby="readerTitle">
+      <div class="reader-head">
+        <div class="reader-head-top">
+          <button class="ghost reader-back-btn" id="closeReader" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>Back</span>
+          </button>
+          <h2 id="readerTitle">Read paper</h2>
+          <div class="reader-head-actions">
+            <div class="reader-view-toggle" id="readerViewToggle">
+              <button type="button" class="view-toggle-btn" id="viewToggleGuide" data-view="guide" title="View Reading Guide">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <span>Guide</span>
+              </button>
+              <button type="button" class="view-toggle-btn active" id="viewTogglePdf" data-view="pdf" title="View PDF">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>PDF</span>
+              </button>
+              <button type="button" class="view-toggle-btn" id="viewToggleTutor" data-view="tutor" title="View AI Reading Tutor">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>Tutor</span>
+              </button>
+            </div>
+            <button type="button" class="export-notes" id="exportNotes" title="Download your marks, guide, and tutor chat as a PDF">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export</span>
+            </button>
+          </div>
+        </div>
+        <p class="hint" id="readerHint" hidden>Staged strategy: 1) Relevance Filter 2) Technical Depth 3) Record to Matrix &amp; Snowball.</p>
+        <div class="reader-jumps" id="readerJumps"></div>
+      </div>
+      <div class="reader-split view-pdf" id="readerSplit">
+        <!-- 1. Left Sidebar: Guide, Tip Card & Staged Strategy -->
+        <aside class="reader-notes reader-sidebar-left">
+          <div id="readerMeta" class="reader-meta" hidden></div>
+          <div class="reader-tabs" role="tablist">
+            <button type="button" class="reader-tab on" id="tabGuide" data-reader-tab="guide">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>Guide</span>
+            </button>
+            <button type="button" class="reader-tab" id="tabMarks" data-reader-tab="marks">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              <span>Marks</span> <b id="readerMarkCount">0</b>
+            </button>
+            <button type="button" class="reader-tab" id="tabExtract" data-reader-tab="extract" hidden>Extract</button>
+          </div>
+
+          <section class="guide-panel" id="guidePanel">
+            <!-- Hint Card -->
+            <div class="tip-card" id="sectionTipWrap">
+              <span class="tip-icon" aria-hidden="true">💡</span>
+              <p id="sectionTip" class="section-tip">You opened the problem. Intros usually say: world as it is &rarr; what is broken &rarr; this paper&rsquo;s claim. Check that story on this page.</p>
+            </div>
+
+            <!-- Staged Reading Strategy 3-pass track -->
+            <div id="readFlow" class="guide-track"></div>
+          </section>
+
+          <div id="readerExtract" hidden></div>
+
+          <section class="marks-panel" id="marksPanel" hidden>
+            <div class="marks-toolbar">
+              <p class="hint" id="marksHint">Select text in the PDF, then click Mark.</p>
+              <button type="button" class="btn-save btn-save--primary" id="markBtn">Mark</button>
+              <button type="button" class="ghost" id="saveMarks">Save</button>
+            </div>
+            <div id="marksList"></div>
+          </section>
+        </aside>
+
+        <!-- 2. Middle Column: PDF Canvas -->
+        <main class="reader-pdf-wrap">
+          <div class="pdf-bar" id="pdfBar">
+            <button type="button" class="pdf-btn ghost" id="pdfPrev">Prev</button>
+            <label class="pdf-page-label">Page
+              <input id="pdfPageInput" type="number" min="1" value="1" />
+              <span id="pdfPageCount">/ 1</span>
+            </label>
+            <button type="button" class="pdf-btn ghost" id="pdfNext">Next</button>
+            <button type="button" class="btn-mark-dark" id="markBtnPdf">Mark</button>
+          </div>
+          <div id="readerPdf" class="reader-pdf"></div>
+          <p id="readerMissing" class="reader-missing" hidden></p>
+        </main>
+
+        <!-- 3. Right Sidebar: AI Reading Tutor Copilot -->
+        <aside class="tutor-copilot" id="tutorCopilot">
+          <div class="copilot-head">
+            <div class="copilot-brand">
+              <div class="copilot-sparkle-badge" aria-hidden="true">✦</div>
+              <div>
+                <h3 class="copilot-title">AI Reading Tutor</h3>
+                <p class="copilot-subtitle">Your research copilot for this paper</p>
+              </div>
+            </div>
+            <div class="copilot-head-actions">
+              <div class="model-pills" role="group" aria-label="Model">
+                <button type="button" class="model-pill" id="pillOpenai" data-provider="openai">gpt-4o</button>
+                <button type="button" class="model-pill" id="pillGemini" data-provider="gemini">Flash</button>
+              </div>
+              <button type="button" class="copilot-collapse-btn" id="toggleCopilot" title="Collapse / Expand Copilot" aria-label="Collapse copilot">&minus;</button>
+            </div>
+          </div>
+          <!-- Copilot Sub-Tabs: Chat vs Overview -->
+          <div class="copilot-tabs" role="tablist" aria-label="Tutor views">
+            <button type="button" class="copilot-tab-btn on" id="tabCopilotChat" data-copilot-tab="chat" role="tab" aria-selected="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Tutor Chat</span>
+              <span class="copilot-tab-count" id="tutorChatBadge" hidden>0</span>
+            </button>
+            <button type="button" class="copilot-tab-btn" id="tabCopilotOverview" data-copilot-tab="overview" role="tab" aria-selected="false">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <span>Paper Overview</span>
+            </button>
+          </div>
+
+          <div class="copilot-body" id="copilotBody">
+            <!-- PANEL 1: TUTOR CHAT (Primary View) -->
+            <div class="copilot-view-panel on" id="panelCopilotChat">
+              <div class="copilot-mini-context" id="copilotMiniContext">
+                <span class="mini-context-title" id="miniContextTitle">Paper Context</span>
+                <button type="button" class="mini-context-switch" id="miniContextSwitch">View Overview &rarr;</button>
+              </div>
+
+              <!-- Empty state shown before user starts chatting -->
+              <div class="tutor-empty-state" id="tutorEmptyState">
+                <div class="tutor-empty-icon" aria-hidden="true">✦</div>
+                <h4>Ask the AI Reading Tutor</h4>
+                <p>Click <strong>Ask</strong> next to any step in the Staged Reading Strategy on the left, or type below to analyze this paper.</p>
+              </div>
+
+              <!-- Tutor Chat Conversation Stream -->
+              <div id="tutorLog" class="tutor-log"></div>
+              <div class="tutor-bottom-anchor" id="tutorBottomAnchor" aria-hidden="true"></div>
+            </div>
+
+            <!-- PANEL 2: PAPER OVERVIEW CARDS -->
+            <div class="copilot-view-panel" id="panelCopilotOverview" hidden>
+              <!-- Card 1: Paper Context -->
+              <section class="copilot-card context-card" id="cardPaperContext">
+                <div class="card-head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <h4>Paper Context</h4>
+                </div>
+                <strong class="context-title" id="contextTitle">Paper Context</strong>
+                <p class="context-meta" id="contextMeta">Authors &middot; Year</p>
+              </section>
+
+              <!-- Card 2: What to check -->
+              <section class="copilot-card check-card" id="cardWhatToCheck">
+                <div class="card-head">
+                  <div class="card-head-left">
+                    <span class="card-emoji" aria-hidden="true">💡</span>
+                    <h4>What to check</h4>
+                  </div>
+                  <span class="badge-quick-focus">Quick focus</span>
+                </div>
+                <ul class="check-list" id="checkList">
+                  <li>What problem are they solving? <span class="check-highlight">(GUI element grounding)</span></li>
+                  <li>What is their main idea / approach? <span class="check-highlight">(lightweight model)</span></li>
+                  <li>How do they evaluate? <span class="check-highlight">(datasets, metrics, results)</span></li>
+                  <li>What are the key findings and contributions?</li>
+                  <li>Any limitations or future work mentioned?</li>
+                </ul>
+              </section>
+
+              <!-- Card 3: Key Points -->
+              <section class="copilot-card points-card" id="cardKeyPoints">
+                <div class="card-head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  <h4>Key Points</h4>
+                </div>
+                <ul class="points-list" id="pointsList">
+                  <li><span class="point-check">✓</span> Focuses on grounding GUI elements using natural language instructions.</li>
+                  <li><span class="point-check">✓</span> Designed for mobile / resource-constrained devices.</li>
+                  <li><span class="point-check">✓</span> Uses a lightweight model for low latency.</li>
+                  <li><span class="point-check">✓</span> Achieves strong performance in cloud-device collaboration.</li>
+                  <li><span class="point-check">✓</span> Effective for real-world GUI agent applications.</li>
+                </ul>
+              </section>
+
+              <div class="overview-action-row">
+                <button type="button" class="btn-ask-from-overview" id="btnAskFromOverview">
+                  <span>💬 Ask Tutor about this paper</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Ask Bar & Quick Chips -->
+          <div class="copilot-foot">
+            <div class="copilot-input-row">
+              <span class="copilot-input-sparkle" aria-hidden="true">✦</span>
+              <input type="text" id="tutorInput" class="copilot-input" placeholder="Ask about this paper&hellip;" maxlength="4000" />
+              <button type="button" class="copilot-send" id="tutorSend" aria-label="Send to Tutor">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
+            <div class="copilot-quick-chips" id="tutorPrompts">
+              <button type="button" class="copilot-quick-chip" data-quick="Give me a concise 3-sentence summary of this paper: core problem, proposed solution, and key headline result.">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Summarize</span>
+              </button>
+              <button type="button" class="copilot-quick-chip" data-quick="Explain the core intuition and mechanism of this paper in simple terms for a student.">
+                <span>💡</span>
+                <span>Explain in simple terms</span>
+              </button>
+              <button type="button" class="copilot-quick-chip" data-quick="Compare this paper's method with competing baselines: what are the key trade-offs and advantages?">
+                <span>⚖️</span>
+                <span>Compare with other work</span>
+              </button>
+            </div>
+            <select id="tutorProvider" hidden>
+              <option value="">Use saved default</option>
+              <option value="openai">OpenAI gpt-4o</option>
+              <option value="gemini">Gemini Flash (free)</option>
+            </select>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <div id="exportPopup" class="export-popup" hidden>
+      <div class="export-popup-card">
+        <span class="export-popup-icon" id="exportPopupIcon" aria-hidden="true"></span>
+        <div>
+          <strong id="exportPopupTitle">Preparing your notes</strong>
+          <p id="exportPopupText">Building a Literature Lab PDF&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Tutor Step Modal -->
+  <div id="aiStepModal" class="ai-modal-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="aiModalTitle">
+    <div class="ai-modal-card" id="aiModalCard">
+      <div class="ai-modal-glow" aria-hidden="true"></div>
+      <div class="ai-modal-header">
+        <div class="ai-modal-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9.1 9a2.9 2.9 0 1 1 4.6 2.4c-.9.7-1.5 1.2-1.5 2.4" stroke-linecap="round"/>
+            <circle cx="12.2" cy="18" r="1.45" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="ai-modal-title-block">
+          <span class="ai-modal-eyebrow">Reading Tutor</span>
+          <h3 id="aiModalTitle" class="ai-modal-step-title">Step</h3>
+        </div>
+        <button type="button" class="ai-modal-close" id="aiModalClose" aria-label="Close tutor popup">&times;</button>
+      </div>
+      <div class="ai-modal-tip" id="aiModalTip">
+        <svg class="ai-tip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <p id="aiModalTipText"></p>
+      </div>
+      <div class="ai-modal-question-wrap">
+        <div class="ai-modal-question-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Staged Technique Question (Uneditable)</span>
+        </div>
+        <textarea id="aiModalInput" class="ai-modal-textarea is-readonly" rows="3" readonly aria-readonly="true" tabindex="0"></textarea>
+      </div>
+      <div class="ai-modal-actions-row">
+        <button type="button" class="ai-modal-send" id="aiModalSend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+          <span>Ask Tutor</span>
+        </button>
+      </div>
+      <div class="ai-modal-footer">
+        <span class="ai-modal-hint">The tutor teaches the technique. It will not write text you can paste.</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/vendor/marked.min.js"></script>
+  <script src="/static/vendor/pdf.min.js"></script>
+  <script src="/static/nav.js"></script>
+  <script src="/static/read-app.js?v=tutor-copilot-v8"></script>
+</body>
+</html>
